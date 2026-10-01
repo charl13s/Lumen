@@ -1,0 +1,12 @@
+{
+  "name": "lumen",
+  "version-string": "0.1.0",
+  "description": "LUMEN - a virtual gallery. ICS 3204 Computer Graphics semester project.",
+  "dependencies": [
+    "glfw3",
+    "glad",
+    "glm",
+    "nlohmann-json",
+    "stb"
+  ]
+}
