@@ -1,0 +1,23 @@
+# Build output
+build/
+out/
+cmake-build-*/
+*.exe
+*.pdb
+*.ilk
+*.obj
+
+# The images lumen_cp1 saves
+output/
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+tools/__pycache__/
+*.pyc
