@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
+<title>LUMEN gallery floor plan</title>
+<desc>A loop corridor around a central atrium, with five vaulted galleries opening off its outer face and sculpture niches in the corridor wall.</desc>
+<rect width="1600" height="900" fill="#14110D"/>
+<g opacity="0.5">
+<line x1="-20.0" y1="830.0" x2="-20.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="80.0" y1="830.0" x2="80.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="180.0" y1="830.0" x2="180.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="280.0" y1="830.0" x2="280.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="380.0" y1="830.0" x2="380.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="480.0" y1="830.0" x2="480.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="580.0" y1="830.0" x2="580.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="680.0" y1="830.0" x2="680.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="780.0" y1="830.0" x2="780.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="880.0" y1="830.0" x2="880.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="980.0" y1="830.0" x2="980.0" y2="70.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="810.0" x2="920.0" y2="810.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="710.0" x2="920.0" y2="710.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="610.0" x2="920.0" y2="610.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="510.0" x2="920.0" y2="510.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="410.0" x2="920.0" y2="410.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="310.0" x2="920.0" y2="310.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="210.0" x2="920.0" y2="210.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="110.0" x2="920.0" y2="110.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+<line x1="-40.0" y1="10.0" x2="920.0" y2="10.0" stroke="#2A251A" stroke-width="1" stroke-linecap="butt" opacity="1.0"/>
+</g>
+<rect x="60.0" y="370.0" width="140.0" height="120.0" fill="#1E1A13" opacity="1.0"/>
+<path d="M200.0 630.0 H640.0 V270.0 H200.0 Z M260.0 570.0 H580.0 V330.0 H260.0 Z" fill="#17130C" fill-rule="evenodd"/>
+<rect x="260.0" y="330.0" width="320.0" height="240.0" fill="#2B2317" opacity="1.0"/>
+<rect x="200.0" y="90.0" width="200.0" height="180.0" fill="#2C2518" opacity="1.0"/>
+<rect x="440.0" y="90.0" width="200.0" height="180.0" fill="#2C2518" opacity="1.0"/>
+<rect x="640.0" y="310.0" width="240.0" height="280.0" fill="#2C2518" opacity="1.0"/>
+<rect x="440.0" y="630.0" width="200.0" height="180.0" fill="#2C2518" opacity="1.0"/>
+<rect x="200.0" y="630.0" width="200.0" height="180.0" fill="#2C2518" opacity="1.0"/>
+<rect x="400.0" y="238.0" width="40.0" height="32.0" fill="#17130C" opacity="1.0"/>
+<rect x="400.0" y="630.0" width="40.0" height="32.0" fill="#17130C" opacity="1.0"/>
+<rect x="168.0" y="540.0" width="32.0" height="60.0" fill="#17130C" opacity="1.0"/>
+<rect x="168.0" y="300.0" width="32.0" height="60.0" fill="#17130C" opacity="1.0"/>
+<circle cx="420.0" cy="450.0" r="60.0" fill="#F2D479" opacity="0.07"/>
+<circle cx="420.0" cy="450.0" r="60.0" fill="none" stroke="#F2D479" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.55"/>
+<line x1="250.0" y1="252.0" x2="250.0" y2="108.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="350.0" y1="252.0" x2="350.0" y2="108.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="490.0" y1="252.0" x2="490.0" y2="108.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="590.0" y1="252.0" x2="590.0" y2="108.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="700.0" y1="572.0" x2="700.0" y2="328.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="820.0" y1="572.0" x2="820.0" y2="328.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="490.0" y1="792.0" x2="490.0" y2="648.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="590.0" y1="792.0" x2="590.0" y2="648.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="250.0" y1="792.0" x2="250.0" y2="648.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="350.0" y1="792.0" x2="350.0" y2="648.0" stroke="#F2D479" stroke-width="2.4" stroke-linecap="butt" opacity="0.5" stroke-dasharray="9 7"/>
+<line x1="230.0" y1="97.0" x2="274.0" y2="97.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="278.0" y1="97.0" x2="322.0" y2="97.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="326.0" y1="97.0" x2="370.0" y2="97.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="207.0" y1="231.0" x2="207.0" y2="187.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="207.0" y1="173.0" x2="207.0" y2="129.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="393.0" y1="231.0" x2="393.0" y2="187.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="393.0" y1="173.0" x2="393.0" y2="129.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="470.0" y1="97.0" x2="514.0" y2="97.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="518.0" y1="97.0" x2="562.0" y2="97.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="566.0" y1="97.0" x2="610.0" y2="97.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="447.0" y1="231.0" x2="447.0" y2="187.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="447.0" y1="173.0" x2="447.0" y2="129.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="633.0" y1="231.0" x2="633.0" y2="187.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="633.0" y1="173.0" x2="633.0" y2="129.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="873.0" y1="546.7" x2="873.0" y2="502.7" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="873.0" y1="472.0" x2="873.0" y2="428.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="873.0" y1="397.3" x2="873.0" y2="353.3" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="694.0" y1="583.0" x2="738.0" y2="583.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="782.0" y1="583.0" x2="826.0" y2="583.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="694.0" y1="317.0" x2="738.0" y2="317.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="782.0" y1="317.0" x2="826.0" y2="317.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="470.0" y1="803.0" x2="514.0" y2="803.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="518.0" y1="803.0" x2="562.0" y2="803.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="566.0" y1="803.0" x2="610.0" y2="803.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="447.0" y1="771.0" x2="447.0" y2="727.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="447.0" y1="713.0" x2="447.0" y2="669.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="633.0" y1="771.0" x2="633.0" y2="727.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="633.0" y1="713.0" x2="633.0" y2="669.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="230.0" y1="803.0" x2="274.0" y2="803.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="278.0" y1="803.0" x2="322.0" y2="803.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="326.0" y1="803.0" x2="370.0" y2="803.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="207.0" y1="771.0" x2="207.0" y2="727.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="207.0" y1="713.0" x2="207.0" y2="669.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="393.0" y1="771.0" x2="393.0" y2="727.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="393.0" y1="713.0" x2="393.0" y2="669.0" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<line x1="200.0" y1="630.0" x2="640.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="630.0" x2="640.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="270.0" x2="200.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="270.0" x2="200.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="260.0" y1="570.0" x2="580.0" y2="570.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="580.0" y1="570.0" x2="580.0" y2="330.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="580.0" y1="330.0" x2="260.0" y2="330.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="260.0" y1="330.0" x2="260.0" y2="570.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="60.0" y1="490.0" x2="200.0" y2="490.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="490.0" x2="200.0" y2="370.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="370.0" x2="60.0" y2="370.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="60.0" y1="370.0" x2="60.0" y2="490.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="270.0" x2="400.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="270.0" x2="400.0" y2="90.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="90.0" x2="200.0" y2="90.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="90.0" x2="200.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="270.0" x2="640.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="270.0" x2="640.0" y2="90.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="90.0" x2="440.0" y2="90.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="90.0" x2="440.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="590.0" x2="880.0" y2="590.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="880.0" y1="590.0" x2="880.0" y2="310.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="880.0" y1="310.0" x2="640.0" y2="310.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="310.0" x2="640.0" y2="590.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="810.0" x2="640.0" y2="810.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="810.0" x2="640.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="630.0" x2="440.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="630.0" x2="440.0" y2="810.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="810.0" x2="400.0" y2="810.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="810.0" x2="400.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="630.0" x2="200.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="630.0" x2="200.0" y2="810.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="270.0" x2="440.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="270.0" x2="440.0" y2="238.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="238.0" x2="400.0" y2="238.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="238.0" x2="400.0" y2="270.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="662.0" x2="440.0" y2="662.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="662.0" x2="440.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="440.0" y1="630.0" x2="400.0" y2="630.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="400.0" y1="630.0" x2="400.0" y2="662.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="168.0" y1="600.0" x2="200.0" y2="600.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="600.0" x2="200.0" y2="540.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="540.0" x2="168.0" y2="540.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="168.0" y1="540.0" x2="168.0" y2="600.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="168.0" y1="360.0" x2="200.0" y2="360.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="360.0" x2="200.0" y2="300.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="300.0" x2="168.0" y2="300.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="168.0" y1="300.0" x2="168.0" y2="360.0" stroke="#E6D6A4" stroke-width="9.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="280.0" y1="270.0" x2="340.0" y2="270.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="500.0" y1="270.0" x2="560.0" y2="270.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="490.0" x2="640.0" y2="410.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="500.0" y1="630.0" x2="560.0" y2="630.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="280.0" y1="630.0" x2="340.0" y2="630.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="260.0" y1="490.0" x2="260.0" y2="410.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="460.0" x2="200.0" y2="400.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="280.0" y1="270.0" x2="340.0" y2="270.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="500.0" y1="270.0" x2="560.0" y2="270.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="640.0" y1="490.0" x2="640.0" y2="410.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="500.0" y1="630.0" x2="560.0" y2="630.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="280.0" y1="630.0" x2="340.0" y2="630.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="260.0" y1="490.0" x2="260.0" y2="410.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="460.0" x2="200.0" y2="400.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="406.0" y1="270.0" x2="434.0" y2="270.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="406.0" y1="270.0" x2="434.0" y2="270.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="406.0" y1="630.0" x2="434.0" y2="630.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="406.0" y1="630.0" x2="434.0" y2="630.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="594.0" x2="200.0" y2="546.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="594.0" x2="200.0" y2="546.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="354.0" x2="200.0" y2="306.0" stroke="#14110D" stroke-width="11.0" stroke-linecap="butt" opacity="1.0"/>
+<line x1="200.0" y1="354.0" x2="200.0" y2="306.0" stroke="#17130C" stroke-width="6.0" stroke-linecap="butt" opacity="1.0"/>
+<polyline points="230.0,430.0 230.0,300.0 610.0,300.0 610.0,600.0 230.0,600.0" fill="none" stroke="#F2D479" stroke-width="1.8" stroke-dasharray="3 7" stroke-linecap="round" opacity="0.8"/>
+<polyline points="140.0,430.0 230.0,430.0" fill="none" stroke="#F2D479" stroke-width="1.8" stroke-dasharray="3 7" stroke-linecap="round" opacity="0.8"/>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#F2D479" stroke-width="1.6" stroke-linecap="round"/></marker></defs>
+<line x1="4.0" y1="430.0" x2="48.0" y2="430.0" stroke="#F2D479" stroke-width="1.6" marker-end="url(#ar)"/>
+<rect x="239.7" y="154.0" width="120.6" height="46" fill="#2C2518"/>
+<text x="300.0" y="176.0" fill="#F2D479" font-size="17" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="middle" letter-spacing="1.2" opacity="1.0">Gallery One</text>
+<text x="300.0" y="196.0" fill="#9A8F72" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">Shawn Kuria</text>
+<rect x="466.8" y="154.0" width="146.4" height="46" fill="#2C2518"/>
+<text x="540.0" y="176.0" fill="#F2D479" font-size="17" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="middle" letter-spacing="1.2" opacity="1.0">Gallery Two</text>
+<text x="540.0" y="196.0" fill="#9A8F72" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">Charles Murage</text>
+<rect x="673.9" y="424.0" width="172.2" height="62" fill="#2C2518"/>
+<text x="760.0" y="446.0" fill="#F2D479" font-size="17" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="middle" letter-spacing="1.2" opacity="1.0">Gallery Three</text>
+<text x="760.0" y="466.0" fill="#9A8F72" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">Timothy Kimani</text>
+<text x="760.0" y="482.0" fill="#F0E5C6" font-size="10" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="2" opacity="0.75">GENERATED ARTWORK</text>
+<rect x="466.8" y="694.0" width="146.4" height="46" fill="#2C2518"/>
+<text x="540.0" y="716.0" fill="#F2D479" font-size="17" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="middle" letter-spacing="1.2" opacity="1.0">Gallery Four</text>
+<text x="540.0" y="736.0" fill="#9A8F72" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">Erykah Diang'a</text>
+<rect x="209.6" y="694.0" width="180.8" height="46" fill="#2C2518"/>
+<text x="300.0" y="716.0" fill="#F2D479" font-size="17" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="middle" letter-spacing="1.2" opacity="1.0">Gallery Five</text>
+<text x="300.0" y="736.0" fill="#9A8F72" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">Priscillah Njoroge</text>
+<text x="420.0" y="536.0" fill="#F0E5C6" font-size="15" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="3.5" opacity="1.0">ATRIUM</text>
+<text x="420.0" y="554.0" fill="#9A8F72" font-size="11.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">the only daylight · you are given the lamp here</text>
+<text x="130.0" y="398.0" fill="#F0E5C6" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="2.5" opacity="1.0">ENTRY</text>
+<text x="420.0" y="442.0" fill="#9A8F72" font-size="11" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">oculus</text>
+<circle cx="420.0" cy="254.0" r="4.5" fill="#F2D479" opacity="0.75"/>
+<circle cx="420.0" cy="646.0" r="4.5" fill="#F2D479" opacity="0.75"/>
+<circle cx="184.0" cy="570.0" r="4.5" fill="#F2D479" opacity="0.75"/>
+<circle cx="184.0" cy="330.0" r="4.5" fill="#F2D479" opacity="0.75"/>
+<rect x="302.0" y="308.0" width="236" height="16" fill="#17130C"/>
+<text x="420.0" y="320.0" fill="#9A8F72" font-size="11" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="2" opacity="1.0">LOOP CORRIDOR · UNLIT · 3 M</text>
+<circle cx="905" cy="790" r="26" fill="none" stroke="#9A8F72" stroke-width="1" opacity="0.55"/>
+<path d="M905 770 L912 798 L905 792 L898 798 Z" fill="#F2D479" opacity="0.9"/>
+<text x="905.0" y="832.0" fill="#9A8F72" font-size="12" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="middle" letter-spacing="0" opacity="1.0">N</text>
+<line x1="60" y1="850" x2="260.0" y2="850" stroke="#9A8F72" stroke-width="1.4"/>
+<line x1="60.0" y1="845" x2="60.0" y2="855" stroke="#9A8F72" stroke-width="1.4"/>
+<line x1="160.0" y1="845" x2="160.0" y2="855" stroke="#9A8F72" stroke-width="1.4"/>
+<line x1="260.0" y1="845" x2="260.0" y2="855" stroke="#9A8F72" stroke-width="1.4"/>
+<rect x="60" y="846" width="100.0" height="8" fill="#9A8F72" opacity="0.55"/>
+<text x="60.0" y="874.0" fill="#9A8F72" font-size="11" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">0</text>
+<text x="260.0" y="874.0" fill="#9A8F72" font-size="11" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">10 m</text>
+<text x="960.0" y="150.0" fill="#F2D479" font-size="46" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="start" letter-spacing="14" opacity="1.0">LUMEN</text>
+<text x="960.0" y="182.0" fill="#9A8F72" font-size="13" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="5" opacity="1.0">GALLERY FLOOR PLAN</text>
+<line x1="960" y1="206" x2="1540" y2="206" stroke="#F2D479" stroke-width="1" opacity="0.5"/>
+<text x="960.0" y="252.0" fill="#F0E5C6" font-size="16" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">A single storey.</text>
+<text x="960.0" y="276.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Five vaulted galleries open off the outer face of a loop</text>
+<text x="960.0" y="296.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">corridor that returns you to where you began.</text>
+<text x="960.0" y="334.0" fill="#F0E5C6" font-size="16" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">The corridor is unlit.</text>
+<text x="960.0" y="358.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Your lamp is the only light in it. Sculpture sits in four</text>
+<text x="960.0" y="378.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">recessed niches, lit only as you pass.</text>
+<text x="960.0" y="416.0" fill="#F0E5C6" font-size="16" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">The rooms light themselves.</text>
+<text x="960.0" y="440.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Crossing a threshold fades up that room's vault slot over</text>
+<text x="960.0" y="460.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">two seconds, washing the ceiling. Step back out and it</text>
+<text x="960.0" y="480.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">fades down.</text>
+<text x="960.0" y="518.0" fill="#F0E5C6" font-size="16" font-family="Georgia, 'Times New Roman', serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Gallery Three is the far room.</text>
+<text x="960.0" y="542.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Largest, furthest from the entrance, and the one that</text>
+<text x="960.0" y="562.0" fill="#9A8F72" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">carries the generated artwork.</text>
+<line x1="960" y1="600" x2="1540" y2="600" stroke="#F2D479" stroke-width="1" opacity="0.3"/>
+<text x="960.0" y="630.0" fill="#9A8F72" font-size="11.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="3.5" opacity="1.0">KEY</text>
+<line x1="960" y1="656" x2="998" y2="656" stroke="#F2D479" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+<text x="1014.0" y="661.0" fill="#F0E5C6" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Hang position for a framed work</text>
+<line x1="960" y1="686" x2="998" y2="686" stroke="#F2D479" stroke-width="2.4" stroke-dasharray="9 7" opacity="0.5"/>
+<text x="1014.0" y="691.0" fill="#F0E5C6" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Vault crown, the light slot above</text>
+<line x1="960" y1="716" x2="998" y2="716" stroke="#F2D479" stroke-width="1.6" stroke-dasharray="3 7" opacity="0.65"/>
+<text x="1014.0" y="721.0" fill="#F0E5C6" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Suggested route · the tour camera path</text>
+<circle cx="979" cy="746" r="4.5" fill="#F2D479" opacity="0.75"/>
+<text x="1014.0" y="751.0" fill="#F0E5C6" font-size="13.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="0" opacity="1.0">Sculpture niche</text>
+<text x="960.0" y="846.0" fill="#9A8F72" font-size="11.5" font-family="Helvetica, Arial, sans-serif" font-weight="400" text-anchor="start" letter-spacing="1" opacity="1.0">Five rooms · one atrium · 41 × 36 m · 1 unit = 1 metre</text>
+</svg>
