@@ -1,0 +1,29 @@
+# Build output
+build/
+out/
+cmake-build-*/
+*.exe
+*.pdb
+*.ilk
+
+# vcpkg
+vcpkg_installed/
+
+# Visual Studio
+.vs/
+*.user
+CMakeSettings.json.user
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Generated previews - the SVG and PNG in docs/ ARE committed, because the
+# slide deck links to them. Everything else from the tools stays local.
+tools/__pycache__/
+*.pyc

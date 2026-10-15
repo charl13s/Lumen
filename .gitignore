@@ -21,3 +21,9 @@ Thumbs.db
 
 tools/__pycache__/
 *.pyc
+
+# Additional local ignore rules
+vcpkg_installed/
+*.user
+CMakeSettings.json.user
+*.swp
