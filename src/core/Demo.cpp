@@ -438,15 +438,16 @@ void pageCurves(Canvas& c, float time) {
 
 const char* pageTitle(Page page) {
     switch (page) {
-        case Page::Lines:      return "1 / 9   LINE DRAWING";
-        case Page::Circles:    return "2 / 9   CIRCLES AND ELLIPSES";
-        case Page::Fills:      return "3 / 9   POLYGON FILLING";
-        case Page::Clipping:   return "4 / 9   LINE CLIPPING";
-        case Page::Polygons:   return "5 / 9   POLYGONS AND POLYGON CLIPPING";
-        case Page::Curves:     return "6 / 9   CURVES AND SPLINES";
-        case Page::Components: return "7 / 9   GALLERY COMPONENTS";
-        case Page::Minimap:    return "8 / 9   THE MINIMAP";
-        case Page::Gallery:    return "9 / 9   THE GALLERY PLAN";
+        case Page::Lines:      return "1 / 10   LINE DRAWING";
+        case Page::Circles:    return "2 / 10   CIRCLES AND ELLIPSES";
+        case Page::Fills:      return "3 / 10   POLYGON FILLING";
+        case Page::Clipping:   return "4 / 10   LINE CLIPPING";
+        case Page::Polygons:   return "5 / 10   POLYGONS AND POLYGON CLIPPING";
+        case Page::Curves:     return "6 / 10   CURVES AND SPLINES";
+        case Page::Components: return "7 / 10   GALLERY COMPONENTS";
+        case Page::Artwork:    return "8 / 10   GENERATED ARTWORK";
+        case Page::Minimap:    return "9 / 10   THE MINIMAP";
+        case Page::Gallery:    return "10 / 10   THE GALLERY PLAN";
         default:             return "";
     }
 }
@@ -472,6 +473,7 @@ void renderPage(Canvas& canvas, Page page, const Plan* plan) {
         case Page::Polygons: pagePolygons(canvas, time); break;
         case Page::Curves:   pageCurves(canvas, time); break;
         case Page::Components: pageComponents(canvas, time); break;
+        case Page::Artwork:  pageArtwork(canvas, time); break;
         case Page::Minimap:  pageMinimap(canvas, plan, time); break;
         case Page::Gallery:  pageGallery(canvas, plan, time); break;
         default: break;
