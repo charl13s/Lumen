@@ -1,6 +1,6 @@
 # Algorithms
 
-Every algorithm is our own C++ in `src/core/`, drawing into a plain pixel array (`raster::Canvas`). No graphics library is used. Run `lumen_cp1` to save all ten pages as images.
+Every algorithm is our own C++ in `src/core/`, drawing into a plain pixel array (`raster::Canvas`). No graphics library is used. Run `lumen_cp1` to save all nine pages as images.
 
 ## Lines (`Raster.cpp`)
 
@@ -56,11 +56,9 @@ A polygon is an ordered list of vertices.
 
 **JSON reader** (`Json.cpp`). Reads `assets/plan.json` so the project needs no libraries.
 
-**Generated artwork** (`ArtPage.cpp`). Four works for Gallery Three, each made from a seed by a small random number generator: Bresenham lines on a grid, drifting polygons, random polygons clipped by Sutherland-Hodgman and filled by scanline, and cubic Beziers with midpoint circles.
-
 ## Tests
 
-`tests/test_core.cpp` has 118 checks:
+`tests/test_core.cpp` has 117 checks:
 
 - Bresenham: endpoints in all eight octants, no gaps on steep lines, matches DDA at 45 degrees
 - Thick lines: exact pixel count, thickness on both sides, no gaps on diagonals
@@ -72,4 +70,4 @@ A polygon is an ordered list of vertices.
 - Sutherland-Hodgman: inside kept, outside removed, corner overlap has the right area, a cut triangle gains a vertex
 - Bezier and Catmull-Rom: endpoints, both Bezier methods agree, the spline passes through its points
 - Plan and JSON: the real plan loads; a missing file, broken JSON or a missing field each give a clear message
-- Image export, every page drawing something, and the same seed giving the same artwork
+- Image export and every page drawing something
