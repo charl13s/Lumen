@@ -17,6 +17,7 @@ enum class Page : int {
     Polygons,        // polygon properties and Sutherland-Hodgman clipping
     Curves,          // Bezier, de Casteljau, Catmull-Rom
     Components,      // a framed painting, the vault in section, plinth and lamp
+    Artwork,         // Gallery Three's generated artwork
     Minimap,         // the minimap around a visitor
     Gallery,         // the plan itself, drawn with all of the above
     Count

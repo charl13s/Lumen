@@ -683,7 +683,17 @@ void testPages() {
         if (marks < 2000) allDrawn = false;
     }
     check(allDrawn, "every page draws something");
-    check(demo::kPageCount == 9, "nine pages");
+    check(demo::kPageCount == 10, "ten pages");
+
+    // The generated artwork comes from fixed seeds, so it is the same every time.
+    Canvas first(1280, 720), second(1280, 720);
+    demo::renderPage(first, demo::Page::Artwork, &plan);
+    demo::renderPage(second, demo::Page::Artwork, &plan);
+    bool same = true;
+    for (int y = 0; y < first.height() && same; ++y)
+        for (int x = 0; x < first.width(); ++x)
+            if (first.get(x, y) != second.get(x, y)) { same = false; break; }
+    check(same, "the same seeds give the same artwork");
 }
 
 } // namespace
