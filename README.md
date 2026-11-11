@@ -1,6 +1,6 @@
 # LUMEN
 
-A walkable virtual art gallery, built for ICS 3204 Computer Graphics at Strathmore University.
+A walkable virtual art gallery.
 
 ## Description
 
