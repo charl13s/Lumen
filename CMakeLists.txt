@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(LUMEN LANGUAGES CXX)
 
-# LUMEN, Checkpoint 1. Plain C++17 with no libraries: every graphics algorithm
-# is our own code, and the output is saved as images.
+# LUMEN, Checkpoint 2. Plain C++17 with no libraries: every graphics algorithm
+# is our own code, and the output is saved as images and animated GIFs.
 #
 # Every .cpp file in src/core/ is built, so adding a file needs no change here.
 
@@ -26,10 +26,10 @@ add_library(lumen_core STATIC ${LUMEN_CORE})
 target_include_directories(lumen_core PUBLIC src)
 
 if (EXISTS ${CMAKE_SOURCE_DIR}/src/main.cpp)
-    add_executable(lumen_cp1 src/main.cpp)
-    target_link_libraries(lumen_cp1 PRIVATE lumen_core)
-    set_target_properties(lumen_cp1 PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT lumen_cp1)
+    add_executable(lumen_cp2 src/main.cpp)
+    target_link_libraries(lumen_cp2 PRIVATE lumen_core)
+    set_target_properties(lumen_cp2 PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT lumen_cp2)
 endif()
 
 if (EXISTS ${CMAKE_SOURCE_DIR}/tests/test_core.cpp)
