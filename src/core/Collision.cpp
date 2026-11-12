@@ -39,8 +39,7 @@ Vec2 Collider::resolve(Vec2 desired, float radius) const {
     Vec2 p = desired;
     const float minDist = radius + half_;
 
-    // Two passes. One is enough in the middle of a wall; the second settles
-    // inside corners, where pushing out of one wall can push you into the other.
+    // Two passes, for corners where leaving one wall pushes you into the other.
     for (int pass = 0; pass < 2; ++pass) {
         bool moved = false;
 
@@ -54,8 +53,7 @@ Vec2 Collider::resolve(Vec2 desired, float radius) const {
 
             float d = std::sqrt(d2);
             if (d < 1e-5f) {
-                // Dead centre on the wall line: push along the wall's normal
-                // rather than a zero-length vector.
+                // Exactly on the wall line: push along the wall's normal.
                 const float wx = w.b.x - w.a.x;
                 const float wy = w.b.y - w.a.y;
                 const float wl = std::sqrt(wx * wx + wy * wy);
