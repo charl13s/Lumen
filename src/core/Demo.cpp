@@ -438,16 +438,18 @@ void pageCurves(Canvas& c, float time) {
 
 const char* pageTitle(Page page) {
     switch (page) {
-        case Page::Lines:      return "1 / 10   LINE DRAWING";
-        case Page::Circles:    return "2 / 10   CIRCLES AND ELLIPSES";
-        case Page::Fills:      return "3 / 10   POLYGON FILLING";
-        case Page::Clipping:   return "4 / 10   LINE CLIPPING";
-        case Page::Polygons:   return "5 / 10   POLYGONS AND POLYGON CLIPPING";
-        case Page::Curves:     return "6 / 10   CURVES AND SPLINES";
-        case Page::Components: return "7 / 10   GALLERY COMPONENTS";
-        case Page::Artwork:    return "8 / 10   GENERATED ARTWORK";
-        case Page::Minimap:    return "9 / 10   THE MINIMAP";
-        case Page::Gallery:    return "10 / 10   THE GALLERY PLAN";
+        case Page::Lines:        return "1 / 12   LINE DRAWING";
+        case Page::Circles:      return "2 / 12   CIRCLES AND ELLIPSES";
+        case Page::Fills:        return "3 / 12   POLYGON FILLING";
+        case Page::Clipping:     return "4 / 12   LINE CLIPPING";
+        case Page::Polygons:     return "5 / 12   POLYGONS AND POLYGON CLIPPING";
+        case Page::Curves:       return "6 / 12   CURVES AND SPLINES";
+        case Page::Transforms:   return "7 / 12   2D TRANSFORMATIONS";
+        case Page::Transforms3D: return "8 / 12   3D TRANSFORMATIONS";
+        case Page::Components:   return "9 / 12   GALLERY COMPONENTS";
+        case Page::Artwork:      return "10 / 12   GENERATED ARTWORK";
+        case Page::Minimap:      return "11 / 12   THE MINIMAP";
+        case Page::Gallery:      return "12 / 12   THE GALLERY PLAN";
         default:             return "";
     }
 }
@@ -472,6 +474,8 @@ void renderPage(Canvas& canvas, Page page, const Plan* plan) {
         case Page::Clipping: pageClipping(canvas, time); break;
         case Page::Polygons: pagePolygons(canvas, time); break;
         case Page::Curves:   pageCurves(canvas, time); break;
+        case Page::Transforms: pageTransforms(canvas, time); break;
+        case Page::Transforms3D: page3D(canvas, plan, time); break;
         case Page::Components: pageComponents(canvas, time); break;
         case Page::Artwork:  pageArtwork(canvas, time); break;
         case Page::Minimap:  pageMinimap(canvas, plan, time); break;
