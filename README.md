@@ -1,6 +1,6 @@
 # LUMEN
 
-A walkable virtual art gallery.
+A walkable virtual art gallery, built for ICS 3204 Computer Graphics at Strathmore University.
 
 ## Description
 
@@ -10,13 +10,13 @@ LUMEN will be a gallery you walk through in first person. The building is dark, 
 
 ## Group members and responsibilities
 
-| Member | Responsible for | Checkpoint 1 work |
+| Member | Responsible for | Work so far |
 |---|---|---|
-| Shawn Kuria | Integration, repository, main program | `main.cpp`, build setup, README |
-| Charles Murage | Camera, movement, collision | Bezier and Catmull-Rom curves, the minimap, the floor plan page, the tour route (`Curves.cpp`, `MapPages.cpp`) |
-| Timothy Kimani | Lighting, shading, artwork | The gallery components: framed painting, vault in section, plinth and lamp (`Components.cpp`) |
-| Erykah Diang'a | Geometry, floor plan | Floor plan generator, plan loading and the JSON reader (`Plan.cpp`, `Json.cpp`) |
-| Priscillah Njoroge | Rasterisation algorithms, tests | Lines, circles, ellipses, fills, clipping, polygons, the algorithm pages and the tests (`Raster.cpp`, `Polygon.cpp`, `Demo.cpp`) |
+| Shawn Kuria | Integration, repository, main program | `main.cpp`, build setup, README; the GIF writer and the list of animations (`Gif.cpp`, `Animations.cpp`) |
+| Charles Murage | Camera, movement, collision | Bezier and Catmull-Rom curves, the minimap, the floor plan page, the tour route (`Curves.cpp`, `MapPages.cpp`); animation helpers and the tour animation (`Anim.cpp`) |
+| Timothy Kimani | Lighting, shading, artwork | The gallery components (`Components.cpp`); Gallery Three's generated artwork, now moving (`ArtPage.cpp`); the lamp animation (`LampAnim.cpp`) |
+| Erykah Diang'a | Geometry, floor plan | Floor plan generator, plan loading and the JSON reader (`Plan.cpp`, `Json.cpp`); 3D transformations and Gallery Two in 3D (`Transform3D.cpp`, `Room3D.cpp`) |
+| Priscillah Njoroge | Rasterisation algorithms, tests | Lines, circles, ellipses, fills, clipping, polygons, the algorithm pages and the tests (`Raster.cpp`, `Polygon.cpp`, `Demo.cpp`); 2D transformations (`Transform.cpp`, `TransformPage.cpp`) |
 
 ## Technologies and tools
 
@@ -29,16 +29,19 @@ LUMEN will be a gallery you walk through in first person. The building is dark, 
 
 ## Graphics techniques and algorithms implemented so far
 
-All in `src/core/`: `Raster.cpp`, `Polygon.cpp` and `Curves.cpp`.
+All in `src/core/`.
 
 | Topic | Implemented | Used for in the project |
 |---|---|---|
-| Lines | DDA, Bresenham (all eight octants), thick lines, polylines | Walls on the floor plan and minimap, the painting's grid, light rays |
+| Lines | DDA, Bresenham (all eight octants), thick lines, polylines | Walls on the floor plan and minimap, the painting's grid, light rays, wireframes |
 | Polygons | Polygons as ordered vertex lists; area (shoelace), centroid, point in polygon (even-odd), convex test | Room shapes, frame pieces |
-| Clipping | Cohen-Sutherland line clipping, Sutherland-Hodgman polygon clipping | Walls and route clipped to the minimap; room shapes clipped to the minimap |
+| Clipping | Cohen-Sutherland line clipping, Sutherland-Hodgman polygon clipping | Walls, route and wireframes clipped to the view; room shapes and the lamp's light clipped to the minimap |
 | Filling | Scanline polygon fill, boundary fill | Rooms, frame, plinth; the room the visitor is standing in |
 | Circles and ellipses | Midpoint circle, midpoint ellipse | Visitor marker, doors, lamp, atrium oculus, the lamp's light on the floor |
 | Curves | Quadratic and cubic Bezier, de Casteljau, Catmull-Rom spline, arc length | Vault arch, frame cross section, guided tour route |
+| 2D transformations | 3x3 matrices: translate, rotate, scale, reflect, shear; about any point or line; composite matrices; inverse | The lamp's light and heading on the minimap, Schotter's rotated squares, the moving mosaic |
+| 3D transformations | 4x4 matrices: translate, scale, rotate about x, y and z; camera (look at); perspective projection | Gallery Two as a turning wireframe, vaults included |
+| Animation | Interpolation, easing, keyframes, looping; motion by arc length; animated GIF output (LZW, median cut colours) | The guided tour, the lamp sweeping a sculpture, the room light fading, the moving artwork |
 
 ## How to compile and run
 
@@ -49,29 +52,35 @@ From the project folder:
 ```bat
 cmake -B build -S .
 cmake --build build --config Debug
-build\Debug\lumen_cp1.exe
+build\Debug\lumen_cp2.exe
 build\Debug\lumen_tests.exe
 ```
 
-`lumen_cp1` saves nine images into `output/` (`page-1.bmp` to `page-9.bmp`). Open them in any image viewer. `lumen_tests` runs the unit tests.
+`lumen_cp2` saves into `output/`:
+- twelve pages as images (`page-1.bmp` to `page-12.bmp`)
+- five animations (`anim-*.gif`); open them in a web browser to watch them
+- six frames from each animation side by side (`anim-*-frames.bmp`), for documents
+
+The animations take about a minute and a half in a Debug build. `lumen_cp2 --pages-only` skips them. `lumen_tests` runs the unit tests.
 
 Without CMake, with g++:
 
 ```bat
-g++ -std=c++17 -Isrc src/main.cpp src/core/*.cpp -o lumen_cp1.exe
+g++ -std=c++17 -O2 -Isrc src/main.cpp src/core/*.cpp -o lumen_cp2.exe
 ```
 
 ## Current progress
 
 - All the Checkpoint 1 algorithms are written and drawn on their own pages: lines, circles and ellipses, filling, line clipping, polygons and polygon clipping, curves.
-- They are used to draw the gallery's components: a framed painting, the vault in section, a plinth with a sculpture and the lamp, the minimap around a visitor, and the full floor plan.
+- 2D transformations with 3x3 matrices and 3D transformations with 4x4 matrices, each on its own page.
+- Five animations: the transformations step by step, Gallery Two turning in 3D, the guided tour with the minimap following the visitor, the lamp sweeping a sculpture while the room light fades, and Gallery Three's artwork moving.
 - The floor plan is generated by `tools/generate-floor-plan.py` and loaded from `assets/plan.json` with our own JSON reader.
-- 117 unit tests pass, on both MSVC and g++.
+- 167 unit tests pass, on both MSVC and g++.
 
 ## Known limitations
 
-- The output is still images. There is no window or interaction yet.
-- Nothing moves yet. Transformations and animation are the next checkpoint.
-- The 3D gallery is not built yet.
+- The output is images and animated GIFs. There is no window or interaction yet.
+- The 3D room is a wireframe: lines only, with no hidden lines removed.
 - The paintings are generated placeholders, not real artwork.
+- GIFs hold at most 256 colours per frame, so smooth shading is reduced.
 - Only tested on Windows.
