@@ -1,4 +1,4 @@
-// tests/test_core.cpp - tests for the Checkpoint 1 algorithms. Owner: Priscillah.
+// tests/test_core.cpp - tests for the algorithms, transformations and animation. Owner: Priscillah.
 // Run lumen_tests before you push.
 
 #include <algorithm>
@@ -10,15 +10,22 @@
 #include <string>
 #include <vector>
 
+#include "core/Anim.h"
+#include "core/Animations.h"
 #include "core/Curves.h"
 #include "core/Demo.h"
+#include "core/Gif.h"
 #include "core/Image.h"
 #include "core/Json.h"
 #include "core/Plan.h"
 #include "core/Polygon.h"
 #include "core/Raster.h"
+#include "core/Transform.h"
+#include "core/Transform3D.h"
 
 namespace {
+
+constexpr float kTestPi = 3.14159265358979f;
 
 int g_failures = 0;
 int g_checks   = 0;
@@ -683,7 +690,7 @@ void testPages() {
         if (marks < 2000) allDrawn = false;
     }
     check(allDrawn, "every page draws something");
-    check(demo::kPageCount == 10, "ten pages");
+    check(demo::kPageCount == 12, "twelve pages");
 
     // The generated artwork comes from fixed seeds, so it is the same every time.
     Canvas first(1280, 720), second(1280, 720);
@@ -696,10 +703,224 @@ void testPages() {
     check(same, "the same seeds give the same artwork");
 }
 
+// ---- 2D transformations ----------------------------------------------------
+
+bool near(xf::PointF p, float x, float y, float tol = 1e-3f) {
+    return std::fabs(p.x - x) < tol && std::fabs(p.y - y) < tol;
+}
+
+void testTransforms() {
+    std::printf("2D transformations\n");
+    const xf::PointF p{3, 4};
+
+    check(near(xf::translation(5, -2).apply(p), 8, 2), "translate moves by (5, -2)");
+    check(near(xf::rotation(kTestPi / 2).apply(xf::PointF{1, 0}), 0, 1), "rotate (1, 0) by 90 degrees gives (0, 1)");
+    check(near(xf::scaling(2, 3).apply(p), 6, 12), "scale multiplies x and y");
+    check(near(xf::reflectionX().apply(p), 3, -4), "reflect in the x axis flips y");
+    check(near(xf::reflectionY().apply(p), -3, 4), "reflect in the y axis flips x");
+    check(near(xf::shearing(0.5f, 0).apply(p), 5, 4), "shear x moves x by half of y");
+
+    {   // a composite matrix is the same as applying each in turn
+        const xf::Mat3 m = xf::translation(3, -2) * xf::rotation(0.4f) * xf::scaling(1.5f, 0.5f);
+        const xf::PointF once = m.apply(xf::PointF{2, 7});
+        const xf::PointF steps = xf::translation(3, -2).apply(
+            xf::rotation(0.4f).apply(xf::scaling(1.5f, 0.5f).apply(xf::PointF{2, 7})));
+        check(near(once, steps.x, steps.y), "composite matrix matches step by step");
+        check(!near(xf::rotation(0.4f).apply(xf::translation(3, 0).apply(p)),
+                    xf::translation(3, 0).apply(xf::rotation(0.4f).apply(p)).x,
+                    xf::translation(3, 0).apply(xf::rotation(0.4f).apply(p)).y),
+              "order matters: rotate then move is not move then rotate");
+    }
+    {   // about a point: the point itself does not move
+        const xf::PointF pivot{10, 20};
+        check(near(xf::rotationAbout(1.1f, pivot).apply(pivot), 10, 20), "rotating about a point leaves it fixed");
+        check(near(xf::scalingAbout(3, 2, pivot).apply(pivot), 10, 20), "scaling about a point leaves it fixed");
+        const xf::Mat3 mirror = xf::reflectionAbout(xf::PointF{0, 5}, 0.0f);   // the line y = 5
+        check(near(mirror.apply(xf::PointF{2, 8}), 2, 2), "reflect in the line y = 5");
+        const xf::PointF twice = mirror.apply(mirror.apply(xf::PointF{7, -3}));
+        check(near(twice, 7, -3), "reflecting twice gives the point back");
+    }
+    {   // the inverse undoes a matrix
+        const xf::Mat3 m = xf::translation(4, 9) * xf::rotation(0.7f) * xf::scaling(2, 0.5f) * xf::shearing(0.3f, 0);
+        const xf::PointF back = xf::inverse(m).apply(m.apply(p));
+        check(near(back, 3, 4), "inverse undoes the composite");
+    }
+    {   // what transformations do to area
+        const poly::Polygon sq = poly::rectangle(0, 0, 4, 4);
+        checkNear(poly::area(xf::transform(sq, xf::rotationAbout(0.9f, {2, 2}))), 16.0f, 1e-3f, "rotation keeps area");
+        checkNear(poly::area(xf::transform(sq, xf::shearing(0.7f, 0))), 16.0f, 1e-3f, "shear keeps area");
+        checkNear(poly::area(xf::transform(sq, xf::scaling(2, 3))), 96.0f, 1e-3f, "scale by 2 and 3 multiplies area by 6");
+        check(poly::signedArea(xf::transform(sq, xf::reflectionX())) < 0.0f &&
+              poly::signedArea(sq) > 0.0f, "reflection reverses the vertex order");
+    }
+}
+
+// ---- 3D transformations ----------------------------------------------------
+
+void testTransforms3D() {
+    std::printf("3D transformations\n");
+    auto near3 = [](xf3::Vec3 v, float x, float y, float z) {
+        return std::fabs(v.x - x) < 1e-3f && std::fabs(v.y - y) < 1e-3f && std::fabs(v.z - z) < 1e-3f;
+    };
+    check(near3(xf3::translation(1, 2, 3).apply({1, 1, 1}), 2, 3, 4), "3D translate");
+    check(near3(xf3::rotationY(kTestPi / 2).apply({1, 0, 0}), 0, 0, -1), "turning (1,0,0) 90 degrees about y gives (0,0,-1)");
+    check(near3(xf3::rotationX(kTestPi / 2).apply({0, 1, 0}), 0, 0, 1), "turning (0,1,0) 90 degrees about x gives (0,0,1)");
+    check(near3(xf3::rotationZ(kTestPi / 2).apply({1, 0, 0}), 0, 1, 0), "turning (1,0,0) 90 degrees about z gives (0,1,0)");
+
+    const xf3::Mat4 view = xf3::lookAt({0, 0, 10}, {0, 0, 0});
+    check(near3(view.apply({0, 0, 10}), 0, 0, 0), "the camera sits at the origin of its own view");
+    check(near3(view.apply({0, 0, 0}), 0, 0, -10), "the target is straight ahead, down -z");
+
+    const xf3::Mat4 vp = xf3::perspective(1.0f, 1.0f, 0.1f, 100.0f) * view;
+    float sx = 0, sy = 0;
+    check(xf3::project(vp, {0, 0, 0}, 200, 200, sx, sy) && std::fabs(sx - 100) < 1e-2f && std::fabs(sy - 100) < 1e-2f,
+          "a point straight ahead lands in the middle of the screen");
+    float nearX = 0, farX = 0, unused = 0;
+    xf3::project(vp, {1, 0, 5}, 200, 200, nearX, unused);
+    xf3::project(vp, {1, 0, -20}, 200, 200, farX, unused);
+    check(nearX - 100 > farX - 100 && farX > 100, "further away looks smaller (perspective)");
+    check(!xf3::project(vp, {0, 0, 20}, 200, 200, sx, sy), "a point behind the camera is not drawn");
+
+    const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+    const xf3::Wire w = xf3::roomWire(plan.rooms[1], plan.wallHeight, plan.vaultApex);
+    bool inside = true;
+    for (const xf3::Vec3& p : w.points)
+        if (p.y < -1e-3f || p.y > plan.vaultApex + 1e-3f) inside = false;
+    check(!w.edges.empty() && inside, "the room wireframe sits between the floor and the top of the vault");
+}
+
+// ---- animation -------------------------------------------------------------
+
+void testAnimation() {
+    std::printf("Animation\n");
+    checkNear(anim::lerp(2.0f, 6.0f, 0.25f), 3.0f, 1e-6f, "lerp a quarter of the way");
+    checkNear(anim::easeInOut(0.0f), 0.0f, 1e-6f, "ease starts at 0");
+    checkNear(anim::easeInOut(1.0f), 1.0f, 1e-6f, "ease ends at 1");
+    checkNear(anim::easeInOut(0.5f), 0.5f, 1e-6f, "ease is half way at half time");
+    check(anim::easeInOut(0.1f) < 0.1f, "ease starts slower than a straight line");
+    bool rising = true;
+    for (int i = 0; i < 100; ++i)
+        if (anim::easeInOut((i + 1) / 100.0f) < anim::easeInOut(i / 100.0f)) rising = false;
+    check(rising, "ease never goes backwards");
+
+    const anim::Track track({{0.0f, 10.0f}, {2.0f, 20.0f}, {4.0f, 0.0f}});
+    checkNear(track.at(2.0f), 20.0f, 1e-5f, "a track hits its keyframe");
+    checkNear(track.at(1.0f), 15.0f, 1e-5f, "half way between keys is half way between values");
+    checkNear(track.at(-5.0f), 10.0f, 1e-5f, "before the first key it holds the first value");
+    checkNear(track.at(9.0f), 0.0f, 1e-5f, "after the last key it holds the last value");
+    checkNear(anim::loop(13.0f, 4.0f), 0.25f, 1e-5f, "loop wraps time into 0 to 1");
+
+    const Colour mid = anim::lerp(Colour{0, 100, 200, 255}, Colour{100, 200, 0, 255}, 0.5f);
+    check(mid.r == 50 && mid.g == 150 && mid.b == 100, "colours blend half way");
+}
+
+// ---- GIF export ------------------------------------------------------------
+
+// A small LZW decoder, to check that what the encoder writes decodes back.
+std::vector<unsigned char> lzwDecode(const std::vector<unsigned char>& data) {
+    std::vector<std::vector<unsigned char>> dict;
+    auto reset = [&] {
+        dict.clear();
+        for (int i = 0; i < 258; ++i) dict.push_back({static_cast<unsigned char>(i)});
+    };
+    reset();
+    std::vector<unsigned char> out;
+    unsigned size = 9, pos = 0;
+    int prev = -1;
+    auto read = [&](unsigned bits) {
+        unsigned v = 0;
+        for (unsigned b = 0; b < bits; ++b, ++pos)
+            if (pos / 8 < data.size() && (data[pos / 8] >> (pos % 8)) & 1) v |= 1u << b;
+        return v;
+    };
+    while (pos + size <= data.size() * 8) {
+        const unsigned code = read(size);
+        if (code == 256) { reset(); size = 9; prev = -1; continue; }
+        if (code == 257) break;
+        std::vector<unsigned char> entry;
+        if (code < dict.size()) entry = dict[code];
+        else if (prev >= 0) { entry = dict[prev]; entry.push_back(dict[prev][0]); }
+        else break;
+        out.insert(out.end(), entry.begin(), entry.end());
+        if (prev >= 0 && dict.size() < 4096) {
+            std::vector<unsigned char> add = dict[prev];
+            add.push_back(entry[0]);
+            dict.push_back(add);
+        }
+        if (dict.size() == (std::size_t{1} << size) && size < 12) ++size;
+        prev = static_cast<int>(code);
+    }
+    return out;
+}
+
+void testGif() {
+    std::printf("GIF export\n");
+    {   // LZW: long, repetitive and random input all come back exactly
+        std::vector<unsigned char> in;
+        unsigned seed = 7;
+        for (int i = 0; i < 60000; ++i) {
+            seed = seed * 1103515245u + 12345u;
+            in.push_back(static_cast<unsigned char>(i < 20000 ? (i / 50) % 7 : (seed >> 16) % 256));
+        }
+        check(lzwDecode(gif::lzwEncode(in)) == in, "LZW output decodes back to the same pixels");
+    }
+    {   // few colours are kept exactly
+        Canvas c(40, 30);
+        c.clear(Colour{10, 20, 30, 255});
+        circleFilled(c, 20, 15, 8, Colour{250, 200, 100, 255});
+        const gif::Indexed img = gif::quantise(c);
+        const Colour got = img.palette[img.pixels[15 * 40 + 20]];
+        check(got == Colour{250, 200, 100, 255}, "a frame with few colours keeps them exactly");
+    }
+    {   // the file has the right shape
+        const std::string path = (std::filesystem::temp_directory_path() / "lumen_test.gif").string();
+        gif::Writer w;
+        check(w.open(path, 32, 16), "GIF opens");
+        Canvas c(32, 16);
+        for (int f = 0; f < 3; ++f) {
+            c.clear(Colour{static_cast<std::uint8_t>(f * 80), 0, 0, 255});
+            w.addFrame(c, 10);
+        }
+        check(w.frames() == 3 && w.close(), "three frames written and the file closed");
+        std::ifstream in(path, std::ios::binary);
+        std::vector<unsigned char> b((std::istreambuf_iterator<char>(in)), {});
+        check(b.size() > 13 && std::string(b.begin(), b.begin() + 6) == "GIF89a", "starts with GIF89a");
+        check(b.size() > 13 && b[6] == 32 && b[8] == 16, "width and height in the header");
+        check(!b.empty() && b.back() == 0x3B, "ends with the GIF trailer");
+        in.close();
+        std::remove(path.c_str());
+    }
+}
+
+// ---- the animations --------------------------------------------------------
+
+void testAnimations() {
+    std::printf("Animations\n");
+    const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+    bool allMove = true, allDraw = true;
+    for (const demo::Animation& a : demo::animations()) {
+        Canvas first(a.width, a.height), later(a.width, a.height);
+        a.draw(first, &plan, 0.0f);
+        a.draw(later, &plan, a.seconds * 0.4f);
+        int differ = 0, marks = 0;
+        const Colour bg = first.get(1, 1);
+        for (int y = 0; y < a.height; y += 2)
+            for (int x = 0; x < a.width; x += 2) {
+                if (first.get(x, y) != later.get(x, y)) ++differ;
+                if (first.get(x, y) != bg) ++marks;
+            }
+        if (differ < 200) allMove = false;
+        if (marks < 500) allDraw = false;
+    }
+    check(allDraw, "every animation draws something");
+    check(allMove, "every animation changes over time");
+    check(demo::animations().size() == 5, "five animations");
+}
+
 } // namespace
 
 int main() {
-    std::printf("\nLUMEN checkpoint 1 tests\n========================\n\n");
+    std::printf("\nLUMEN tests\n===========\n\n");
     testBresenham();
     testCircle();
     testEllipse();
@@ -713,6 +934,11 @@ int main() {
     testImage();
     testJson();
     testPages();
+    testTransforms();
+    testTransforms3D();
+    testAnimation();
+    testGif();
+    testAnimations();
 
     std::printf("\n%d checks, %d failures\n\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;

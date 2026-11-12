@@ -1,6 +1,6 @@
 # Algorithms
 
-Every algorithm is our own C++ in `src/core/`, drawing into a plain pixel array (`raster::Canvas`). No graphics library is used. Run `lumen_cp1` to save all nine pages as images.
+Every algorithm is our own C++ in `src/core/`, drawing into a plain pixel array (`raster::Canvas`). No graphics library is used. Run `lumen_cp2` to save all twelve pages as images and the five animations as GIFs.
 
 ## Lines (`Raster.cpp`)
 
@@ -38,7 +38,7 @@ A polygon is an ordered list of vertices.
 
 **Cohen-Sutherland** (`Raster.cpp`, `clipCohenSutherland`). Each endpoint gets a 4 bit code. Both zero: keep. A shared bit: drop. Otherwise cut at an edge and check again. Clips walls and the tour route to the minimap.
 
-**Sutherland-Hodgman** (`Polygon.cpp`, `clipSutherlandHodgman`). Clips a polygon against the left, right, bottom and top edges in turn, keeping inside vertices and adding one wherever an edge crosses. Clips room shapes to the minimap.
+**Sutherland-Hodgman** (`Polygon.cpp`, `clipSutherlandHodgman`). Clips a polygon against the left, right, bottom and top edges in turn, keeping inside vertices and adding one wherever an edge crosses. Clips room shapes and the lamp's light to the minimap.
 
 ## Curves (`Curves.cpp`)
 
@@ -48,6 +48,37 @@ A polygon is an ordered list of vertices.
 
 **Arc length** (`arcLengths`, `pointAtDistance`). Places a point by distance along the curve rather than by t.
 
+## 2D transformations (`Transform.cpp`)
+
+A point (x, y) is written as (x, y, 1), so every transformation is a 3x3 matrix and any chain of them multiplies into one matrix.
+
+| Transformation | Function | Matrix idea |
+|---|---|---|
+| Translate | `translation` | Adds dx and dy through the third column |
+| Rotate | `rotation` | cos and sin in the top left 2x2 |
+| Scale | `scaling` | sx and sy on the diagonal |
+| Reflect | `reflectionX`, `reflectionY` | Scale one axis by -1 |
+| Shear | `shearing` | x gains a share of y, or y of x |
+| About a point | `rotationAbout`, `scalingAbout` | Move the point to the origin, transform, move back |
+| In any line | `reflectionAbout` | Turn the line onto the x axis, mirror, turn back |
+| Undo | `inverse` | Adjugate divided by the determinant |
+
+Used for the lamp's light and heading on the minimap (turned to the way the visitor faces), Schotter's rotated squares, and the spinning mosaic.
+
+## 3D transformations (`Transform3D.cpp`)
+
+A point is (x, y, z, 1) and every step is a 4x4 matrix: move, scale, and rotate about x, y or z. `lookAt` builds the camera's view from its position and target. `perspective` makes far things smaller: after it, x and y are divided by w, the distance in front of the camera. The final chain is projection x view x model. Gallery Two is built from the plan as a wireframe (walls, doorway, paintings, and the vaults as quadratic Bezier ribs) and drawn with Bresenham, clipped with Cohen-Sutherland.
+
+## Animation (`Anim.cpp`, `Gif.cpp`)
+
+Each animation draws a frame for a time in seconds.
+
+- **Interpolation** (`lerp`): in-between values for numbers, points and colours.
+- **Easing** (`easeInOut`, smoothstep 3t^2 - 2t^3): starts and ends gently instead of jerking.
+- **Keyframes** (`Track`): values set at chosen times, eased in between. The room light fades on keyframes.
+- **Motion by arc length**: the tour moves a set distance each frame, so the speed stays even round corners.
+- **GIF output**: each frame's colours are cut to 256 by median cut, then the pixels are compressed with LZW.
+
 ## Supporting code
 
 **Bitmap font** (`Font.cpp`). 5 by 7 pixel letters, drawn pixel by pixel, for every label.
@@ -56,9 +87,11 @@ A polygon is an ordered list of vertices.
 
 **JSON reader** (`Json.cpp`). Reads `assets/plan.json` so the project needs no libraries.
 
+**Generated artwork** (`ArtPage.cpp`). Four works for Gallery Three, each made from a seed by a small random number generator: Bresenham lines on a grid, rotated squares, random polygons clipped by Sutherland-Hodgman and filled by scanline, and cubic Beziers with midpoint circles. Each also moves, looping every 8 seconds.
+
 ## Tests
 
-`tests/test_core.cpp` has 117 checks:
+`tests/test_core.cpp` has 167 checks:
 
 - Bresenham: endpoints in all eight octants, no gaps on steep lines, matches DDA at 45 degrees
 - Thick lines: exact pixel count, thickness on both sides, no gaps on diagonals
@@ -70,4 +103,9 @@ A polygon is an ordered list of vertices.
 - Sutherland-Hodgman: inside kept, outside removed, corner overlap has the right area, a cut triangle gains a vertex
 - Bezier and Catmull-Rom: endpoints, both Bezier methods agree, the spline passes through its points
 - Plan and JSON: the real plan loads; a missing file, broken JSON or a missing field each give a clear message
-- Image export and every page drawing something
+- Image export, every page drawing something, and the same seed giving the same artwork
+- 2D transformations: each one on a known point, composite equals step by step, order matters, points about which we turn stay fixed, the inverse undoes, rotation and shear keep area, reflection reverses vertex order
+- 3D transformations: turns about x, y and z, the camera view, a point ahead lands in the centre, further looks smaller, behind the camera is not drawn
+- Animation: interpolation, easing starts slow and never goes backwards, keyframes, looping, colour blending
+- GIF: LZW output decodes back exactly, few colours are kept exactly, the file has the right header and trailer
+- Every animation draws something and changes over time

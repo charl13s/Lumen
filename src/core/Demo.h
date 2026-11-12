@@ -16,6 +16,8 @@ enum class Page : int {
     Clipping,        // Cohen-Sutherland against a viewport
     Polygons,        // polygon properties and Sutherland-Hodgman clipping
     Curves,          // Bezier, de Casteljau, Catmull-Rom
+    Transforms,      // 2D transformations with 3x3 matrices
+    Transforms3D,    // 3D transformations and projection, Gallery Two
     Components,      // a framed painting, the vault in section, plinth and lamp
     Artwork,         // Gallery Three's generated artwork
     Minimap,         // the minimap around a visitor

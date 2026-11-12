@@ -49,6 +49,8 @@ inline void legend(Canvas& c, int x, int y, Colour swatch, const std::string& la
 // Pages that live in their own files.
 void pageComponents(Canvas& c, float time);                       // Components.cpp, Timothy
 void pageArtwork(Canvas& c, float time);                          // ArtPage.cpp, Timothy
+void pageTransforms(Canvas& c, float time);                       // TransformPage.cpp, Priscillah
+void page3D(Canvas& c, const Plan* plan, float time);             // Room3D.cpp, Erykah
 void pageMinimap(Canvas& c, const Plan* plan, float time);        // MapPages.cpp, Charles
 void pageGallery(Canvas& c, const Plan* plan, float time);        // MapPages.cpp, Charles
 std::vector<curves::P2> tourPath(const Plan& plan);              // MapPages.cpp, Charles
