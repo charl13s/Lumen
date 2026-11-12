@@ -1,15 +1,8 @@
-// Collision.h - keeps the visitor inside the building.
+// Collision.h - keeps the visitor out of the walls. Owner: Charles.
 //
-// The player is a circle in plan (radius cfg::kPlayerRadius); every wall is a
-// thick line segment from the plan. We resolve by projection: find the closest
-// point on each wall, and if the player has got closer than radius + half the
-// wall thickness, push them back out along the normal.
-//
-// Pushing out (rather than blocking the move) is what gives sliding along a wall
-// instead of sticking, which matters a lot when someone is walking a 3 m corridor
-// with a mouse in their hand.
-//
-// No OpenGL here. Tested in tests/test_core.cpp.
+// The visitor is a circle and each wall is a thick line. If the visitor gets too
+// close to a wall, they are pushed back out. Pushing out instead of stopping the
+// move lets you slide along walls.
 
 #pragma once
 #include <vector>
@@ -20,15 +13,13 @@ namespace lumen {
 
 class Collider {
 public:
-    // Builds from the plan's wall list. Doorways are already subtracted by the
-    // plan generator, so an opening is simply an absence of segments.
+    // Doorways are already gaps in the plan's wall list.
     Collider(const std::vector<Segment>& walls, float wallThickness);
 
-    // Returns the position the player actually ends up at after sliding.
+    // Where the visitor ends up after being pushed out of walls.
     Vec2 resolve(Vec2 desired, float radius) const;
 
-    // Straight-line visibility between two plan points, ignoring wall thickness.
-    // Used by the reveal logic and (later) by anything that needs line of sight.
+    // True if a wall crosses the line from a to b.
     bool segmentBlocked(Vec2 a, Vec2 b) const;
 
     std::size_t wallCount() const { return walls_.size(); }
