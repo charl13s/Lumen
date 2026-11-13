@@ -67,8 +67,11 @@ Plan parsePlan(const Value& j) {
     p.oculusCentre = toVec2(oc.at("centre"));
     p.oculusRadius = num(oc.at("radius"));
 
-    for (const Value& n : j.at("niches").array())
+    for (const Value& n : j.at("niches").array()) {
         p.niches.push_back(toRect(n.at("rect")));
+        // The gap in the corridor wall in front of the niche, for its lintel.
+        if (n.contains("opening")) p.nicheOpenings.push_back(toSegment(n.at("opening")));
+    }
 
     for (const Value& r : j.at("rooms").array()) {
         RoomPlan rp;
