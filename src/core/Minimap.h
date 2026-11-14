@@ -1,22 +1,19 @@
-// Minimap.h - drawn by hand, on the CPU, with our own rasteriser.
+// Minimap.h - the map in the corner, drawn pixel by pixel with our own rasteriser.
 //
-// This is where the week 4 and 5 algorithms do real work in LUMEN. The 3D view
-// is rasterised by the GPU; the minimap is rasterised by us:
-//
-//   walls          lineBresenham  (thickened by parallel runs)
-//   room outlines  fillPolygonScanline
-//   current room   fillBoundary
-//   visitor, doors circleMidpoint / circleFilled
-//   viewport edge  clipCohenSutherland
-//
-// The Canvas is produced entirely on the CPU and uploaded as one texture per
-// frame, so the drawing logic can be tested without a window - and so that the
-// answer to "where does your project use Bresenham?" is a file, not a shrug.
+//   walls            lineThick (Bresenham), clipped with clipCohenSutherland
+//   rooms            clipSutherlandHodgman, then fillPolygonScanline
+//   tour route       lineBresenham
+//   visitor, doors   circleMidpoint, circleFilled
+//   oculus           ellipseMidpoint
+//   lamp light       an ellipse polygon, rotated and moved by a 3x3 matrix
 
 #pragma once
 #include <string>
+#include <vector>
 
+#include "CanvasView.h"
 #include "Config.h"
+#include "Curves.h"
 #include "Plan.h"
 #include "Raster.h"
 
@@ -27,12 +24,12 @@ public:
     Minimap(const Plan& plan, int pixels = cfg::kMinimapPx);
     ~Minimap();
 
-    // Rasterises into the internal canvas. No OpenGL - call it from a test.
+    // Draws into the canvas. No OpenGL.
     void redraw(Vec2 playerPlanPos, float headingDeg, const std::string& currentRoomId);
 
     const raster::Canvas& canvas() const { return canvas_; }
 
-    // Uploads the canvas and draws it in the screen corner. Needs a GL context.
+    // Shows the canvas in the screen corner.
     void present(int screenW, int screenH);
 
 private:
@@ -41,14 +38,11 @@ private:
     float          scale_ = cfg::kMinimapScale;
     Vec2           origin_{0.0f, 0.0f};   // plan point at the canvas centre
 
-    unsigned texture_ = 0;
-    unsigned vao_ = 0, vbo_ = 0;
-    unsigned progId_ = 0;
-    bool     glReady_ = false;
+    std::vector<curves::P2> tourPath_;   // worked out once, it never changes
 
-    void ensureGL();
+    gfx::CanvasView view_;
 
-    // plan metres -> canvas pixels
+    // plan metres to canvas pixels
     raster::Point toPx(Vec2 planPoint) const;
 };
 
