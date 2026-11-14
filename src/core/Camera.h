@@ -1,8 +1,4 @@
-// Camera.h - the visitor. First-person, walks at gallery pace, slides along walls.
-//
-// Owned by Charles (camera, movement and collision). If you need the camera to do
-// something new, that is a core change: open an issue rather than editing this
-// from a room file.
+// Camera.h - the first person camera. Owner: Charles.
 
 #pragma once
 #include <glm/glm.hpp>
@@ -23,7 +19,7 @@ class Camera {
 public:
     Camera(Vec2 startPlanPos, float headingDeg);
 
-    // Applies input, then asks the collider where the visitor actually ends up.
+    // Moves by the input, then lets the collider stop it at walls.
     void update(const MoveInput& in, const Collider& collider, float dt);
 
     glm::mat4 view() const;
@@ -37,13 +33,16 @@ public:
     Vec2  planPos() const { return plan_; }
     float headingDeg() const { return yaw_; }
 
-    // Used by the tour camera to take over and hand back.
+    // Used by the guided tour.
     void teleport(Vec2 planPos, float headingDeg);
+
+    // Look up (positive) or down, in degrees. Used for screenshots.
+    void setPitch(float degrees);
 
 private:
     Vec2  plan_;
     float yaw_   = 0.0f;    // degrees, 0 = north (-Z), 90 = east (+X)
-    float pitch_ = 0.0f;    // degrees, clamped to avoid gimbal flip
+    float pitch_ = 0.0f;    // degrees, clamped so the view cannot flip over
     glm::vec3 forward_{0.0f, 0.0f, -1.0f};
     glm::vec3 right_{1.0f, 0.0f, 0.0f};
     glm::vec3 up_{0.0f, 1.0f, 0.0f};

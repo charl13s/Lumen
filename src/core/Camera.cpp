@@ -16,14 +16,14 @@ Camera::Camera(Vec2 startPlanPos, float headingDeg)
 }
 
 void Camera::rebuildBasis() {
-    // yaw 0 looks north, which is -Z in world space (see Plan.h for the mapping).
+    // yaw 0 looks north, which is -Z in world space.
     const float y = yaw_ * kDeg2Rad;
     const float p = pitch_ * kDeg2Rad;
 
     forward_ = glm::normalize(glm::vec3(std::sin(y) * std::cos(p),
                                         std::sin(p),
                                         -std::cos(y) * std::cos(p)));
-    // World up is fixed; we never roll, so right is forward x up.
+    // No roll, so right is forward cross up.
     right_ = glm::normalize(glm::cross(forward_, glm::vec3(0.0f, 1.0f, 0.0f)));
     up_    = glm::normalize(glm::cross(right_, forward_));
 }
@@ -38,7 +38,7 @@ void Camera::update(const MoveInput& in, const Collider& collider, float dt) {
     rebuildBasis();
 
     // --- move ---
-    // Movement is planar: looking up must not lift the visitor off the floor.
+    // Stay on the floor even when looking up or down.
     glm::vec3 flatFwd(forward_.x, 0.0f, forward_.z);
     const float fl = glm::length(flatFwd);
     if (fl > 1e-5f) flatFwd /= fl;
@@ -51,10 +51,10 @@ void Camera::update(const MoveInput& in, const Collider& collider, float dt) {
 
     const float wl = glm::length(wish);
     if (wl > 1e-5f) {
-        wish /= wl;   // normalise so diagonal movement is not faster
+        wish /= wl;   // so diagonal movement is not faster
         const float speed = in.run ? cfg::kRunSpeed : cfg::kWalkSpeed;
 
-        // World -> plan: +X is +x, -Z is +y.
+        // World to plan: +X is +x, -Z is +y.
         const Vec2 desired{plan_.x + wish.x * speed * dt,
                            plan_.y - wish.z * speed * dt};
         plan_ = collider.resolve(desired, cfg::kPlayerRadius);
@@ -79,6 +79,11 @@ glm::mat4 Camera::projection(float aspect) const {
 void Camera::teleport(Vec2 planPos, float headingDeg) {
     plan_ = planPos;
     yaw_  = headingDeg;
+    rebuildBasis();
+}
+
+void Camera::setPitch(float degrees) {
+    pitch_ = std::clamp(degrees, -85.0f, 85.0f);
     rebuildBasis();
 }
 
