@@ -1,0 +1,27 @@
+{
+  "_comment": [
+    "The torch bearer who hands you the lamp at the start. Read by src/core/Intro.cpp.",
+    "character is a rigged glTF or GLB under assets/. animations is an animation library for the",
+    "same rig, or leave it out if the character has its own clips.",
+    "clips name the clip for each part of the story. Case, dots and underscores do not matter, and a",
+    "part of a name is enough. If one is wrong, the gallery prints every clip it has.",
+    "hand is the bone the torch is held in, and grip a knuckle bone that puts it in the palm.",
+    "give_hold is how far into the give clip to stop, with",
+    "the arm held out. walk_speed is in metres a second, set to match the walk."
+  ],
+  "character": "models/torch_bearer/Superhero_Male_FullBody.gltf",
+  "animations": "models/torch_bearer/UAL1_Standard.glb",
+  "height": 1.80,
+  "walk_speed": 1.25,
+  "hand": "hand_l",
+  "grip": "middle_01_l",
+  "finish": "marble",
+  "give_hold": 0.8,
+  "clips": {
+    "idle_torch": "Idle_Torch_Loop",
+    "idle": "Idle_Loop",
+    "walk": "Walk_Formal_Loop",
+    "give": "Interact"
+  },
+  "credit": "Universal Base Characters and Universal Animation Library by Quaternius, CC0"
+}
