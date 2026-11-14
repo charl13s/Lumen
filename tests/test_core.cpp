@@ -12,14 +12,22 @@
 
 #include "core/Anim.h"
 #include "core/Animations.h"
+#include "core/Builders.h"
+#include "core/Collision.h"
+#include "core/Config.h"
 #include "core/Curves.h"
 #include "core/Demo.h"
 #include "core/Gif.h"
 #include "core/Image.h"
+#include "core/Intro.h"
 #include "core/Json.h"
+#include "core/Lighting.h"
+#include "core/Model.h"
 #include "core/Plan.h"
 #include "core/Polygon.h"
 #include "core/Raster.h"
+#include "core/Sculpture.h"
+#include "core/Skeleton.h"
 #include "core/Transform.h"
 #include "core/Transform3D.h"
 
@@ -601,7 +609,8 @@ void testPlanLoad() {
 
     {   const Plan p = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
         check(p.rooms.size() == 5, "the real plan has five rooms");
-        check(p.walls.size() == 45, "the real plan has 45 wall segments");
+        check(p.walls.size() == 61, "the real plan has 61 wall segments");
+        check(p.nicheOpenings.size() == 4, "four niches open onto the corridor");
         check(p.doorways.size() == 7, "seven doorways: five rooms, the atrium and the vestibule");
         bool sevenEach = true;
         for (const RoomPlan& r : p.rooms) if (r.hangs.size() != 7) sevenEach = false;
@@ -620,6 +629,19 @@ void testPlanLoad() {
         check(loadFails(bad, "missing a field"), "a missing field names the problem");
         check(loadFails(bad, "lumen_missing_field.json"), "and names the file");
         std::remove(bad.c_str());
+    }
+    {   // every doorway really is a gap: no wall runs through its middle
+        const Plan p = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+        Collider col(p.walls, p.wallThickness);
+        bool open = true;
+        for (const Segment& d : p.doorways) {
+            const Vec2 mid{(d.a.x + d.b.x) * 0.5f, (d.a.y + d.b.y) * 0.5f};
+            const float nx = d.horizontal() ? 0.0f : 1.0f;
+            const float ny = d.horizontal() ? 1.0f : 0.0f;
+            if (col.segmentBlocked(Vec2{mid.x - nx, mid.y - ny}, Vec2{mid.x + nx, mid.y + ny}))
+                open = false;
+        }
+        check(open, "every doorway is an opening in the walls");
     }
 }
 
@@ -917,6 +939,913 @@ void testAnimations() {
     check(demo::animations().size() == 5, "five animations");
 }
 
+// ============================================================================
+// The gallery (Checkpoint 3)
+// ============================================================================
+
+// ---- geometry winding ------------------------------------------------------
+// Every face must point out of its solid. A backwards face is culled and lit black.
+
+void testWinding() {
+    std::printf("Geometry winding\n");
+
+    // Two parallel walls 4 m apart, with the visitor between them.
+    Plan plan;
+    plan.wallThickness = 0.45f;
+    plan.wallHeight    = 4.2f;
+    plan.walls = {
+        Segment{{0.0f, 0.0f}, {10.0f, 0.0f}},
+        Segment{{0.0f, 4.0f}, {10.0f, 4.0f}},
+    };
+
+    const gfx::MeshData mesh = build::extrudeWalls(plan);
+    check(!mesh.vertices.empty(), "wall extrusion produces geometry");
+    check(mesh.triangleCount() == 20, "each wall segment makes ten triangles");
+
+    // The visitor stands between the walls, at head height.
+    const glm::vec3 eye(5.0f, 1.65f, -2.0f);   // plan (5, 2): world z is -plan y
+
+    // Any triangle facing the visitor must have its normal pointing at them.
+    int facing = 0, backward = 0;
+    for (std::size_t i = 0; i + 2 < mesh.indices.size(); i += 3) {
+        const glm::vec3 a = mesh.vertices[mesh.indices[i + 0]].position;
+        const glm::vec3 b = mesh.vertices[mesh.indices[i + 1]].position;
+        const glm::vec3 c = mesh.vertices[mesh.indices[i + 2]].position;
+
+        const glm::vec3 geometric = glm::normalize(glm::cross(b - a, c - a));
+        const glm::vec3 stored    = mesh.vertices[mesh.indices[i]].normal;
+
+        // The stored normal must match the winding.
+        if (glm::dot(geometric, stored) < 0.9f) ++backward;
+
+        const glm::vec3 toEye = glm::normalize(eye - a);
+        if (glm::dot(geometric, toEye) > 0.25f) ++facing;
+    }
+    check(backward == 0, "stored normals agree with the winding on every triangle");
+    check(facing > 0, "some wall faces are turned toward a visitor between them");
+
+    // The two inner faces the visitor sees: the y=0 wall faces north (world -Z),
+    // the y=4 wall faces south (+Z).
+    bool northFace = false, southFace = false;
+    for (const gfx::Vertex& v : mesh.vertices) {
+        // Inner face of the south wall sits at plan y = +0.225, world z = -0.225
+        if (std::fabs(v.position.z + 0.225f) < 1e-3f && v.normal.z < -0.9f)
+            northFace = true;
+        // Inner face of the north wall sits at plan y = 3.775, world z = -3.775
+        if (std::fabs(v.position.z + 3.775f) < 1e-3f && v.normal.z > 0.9f)
+            southFace = true;
+    }
+    check(northFace, "the south wall's inner face points into the corridor");
+    check(southFace, "the north wall's inner face points into the corridor");
+
+    // A box: every face points away from its centre.
+    {
+        const glm::vec3 c(1.0f, 0.5f, -2.0f);
+        const gfx::MeshData box = build::buildBox(c, glm::vec3(1.0f, 1.0f, 1.0f));
+        check(box.triangleCount() == 12, "a box is twelve triangles");
+
+        bool allOutward = true;
+        for (std::size_t i = 0; i + 2 < box.indices.size(); i += 3) {
+            const glm::vec3 a = box.vertices[box.indices[i + 0]].position;
+            const glm::vec3 b = box.vertices[box.indices[i + 1]].position;
+            const glm::vec3 d = box.vertices[box.indices[i + 2]].position;
+            const glm::vec3 n = glm::normalize(glm::cross(b - a, d - a));
+            const glm::vec3 outward = glm::normalize(((a + b + d) / 3.0f) - c);
+            if (glm::dot(n, outward) < 0.5f) allOutward = false;
+        }
+        check(allOutward, "every box face points away from its centre");
+    }
+
+    // A cylinder: sides face away from the axis, the cap faces up.
+    {
+        const glm::vec3 base(2.0f, 1.0f, -3.0f);
+        const gfx::MeshData cyl = build::buildCylinder(base, 0.5f, 1.0f, 16);
+        bool outward = true;
+        for (std::size_t i = 0; i + 2 < cyl.indices.size(); i += 3) {
+            const glm::vec3 a = cyl.vertices[cyl.indices[i + 0]].position;
+            const glm::vec3 b = cyl.vertices[cyl.indices[i + 1]].position;
+            const glm::vec3 d = cyl.vertices[cyl.indices[i + 2]].position;
+            const glm::vec3 n = glm::normalize(glm::cross(b - a, d - a));
+            const glm::vec3 mid = (a + b + d) / 3.0f;
+            glm::vec3 away = mid - glm::vec3(base.x, mid.y, base.z);   // from the axis
+            if (std::fabs(mid.y - (base.y + 1.0f)) < 1e-4f) away = glm::vec3(0, 1, 0);   // the cap
+            if (glm::dot(n, glm::normalize(away)) < 0.5f) outward = false;
+            if (glm::dot(n, cyl.vertices[cyl.indices[i]].normal) < 0.5f) outward = false;
+        }
+        check(outward, "every cylinder face points outward, matching its stored normal");
+    }
+
+    // A vault must be visible from below.
+    {
+        RoomPlan room;
+        room.id = "RT";
+        room.rect = Rect{0.0f, 0.0f, 10.0f, 9.0f};
+        room.vaults = {Segment{{5.0f, 0.9f}, {5.0f, 8.1f}}};
+        const gfx::MeshData v = build::buildRoomVaults(room, 4.2f, 6.0f);
+        check(!v.vertices.empty(), "a vault produces geometry");
+
+        const glm::vec3 below(5.0f, 1.65f, -4.5f);   // standing under it
+        int visible = 0;
+        for (std::size_t i = 0; i + 2 < v.indices.size(); i += 3) {
+            const glm::vec3 a = v.vertices[v.indices[i + 0]].position;
+            const glm::vec3 b = v.vertices[v.indices[i + 1]].position;
+            const glm::vec3 d = v.vertices[v.indices[i + 2]].position;
+            const glm::vec3 n = glm::normalize(glm::cross(b - a, d - a));
+            if (glm::dot(n, glm::normalize(below - a)) > 0.1f) ++visible;
+        }
+        check(visible > 0, "the vault is visible from under it");
+    }
+
+    // Floors face up.
+    Plan fp = plan;
+    fp.bounds = Rect{0, 0, 10, 10};
+    fp.atriumRect = Rect{2, 2, 8, 8};
+    fp.vestibuleRect = Rect{0, 0, 1, 1};
+    fp.corridorOuter = Rect{0, 0, 10, 10};
+    fp.corridorInner = Rect{2, 2, 8, 8};
+    const gfx::MeshData floors = build::buildFloors(fp);
+    bool allUp = true;
+    for (const gfx::Vertex& v : floors.vertices)
+        if (v.normal.y < 0.9f) allUp = false;
+    check(allUp, "every floor face points up");
+}
+
+// ---- collision -------------------------------------------------------------
+
+void testCollision() {
+    std::printf("Collision\n");
+
+    // A 10x10 room: walls on all four sides.
+    std::vector<Segment> walls{
+        {{0, 0}, {10, 0}}, {{10, 0}, {10, 10}},
+        {{10, 10}, {0, 10}}, {{0, 10}, {0, 0}},
+    };
+    Collider col(walls, 0.45f);
+    const float r = 0.32f;
+    const float clear = r + 0.225f;   // radius + half thickness
+
+    {   Vec2 p = col.resolve(Vec2{5, 5}, r);
+        checkNear(p.x, 5, 1e-3f, "a point in open floor is not moved (x)");
+        checkNear(p.y, 5, 1e-3f, "a point in open floor is not moved (y)");
+    }
+    {   // walking into the south wall: pushed back to exactly the clearance
+        Vec2 p = col.resolve(Vec2{5, 0.1f}, r);
+        checkNear(p.y, clear, 1e-3f, "pushed out of the south wall to clearance");
+        checkNear(p.x, 5, 1e-3f, "push is perpendicular, x unchanged");
+    }
+    {   // a corner has to satisfy both walls at once
+        Vec2 p = col.resolve(Vec2{0.05f, 0.05f}, r);
+        check(p.x >= clear - 1e-2f && p.y >= clear - 1e-2f,
+              "corner resolves against both walls");
+    }
+    {   // and must not tunnel straight through a wall
+        Vec2 p = col.resolve(Vec2{-1.0f, 5.0f}, r);
+        check(p.x < 0.0f || p.x >= clear - 1e-2f, "does not end up embedded in a wall");
+    }
+    {   check(col.segmentBlocked(Vec2{5, 5}, Vec2{5, 20}), "line of sight blocked by a wall");
+        check(!col.segmentBlocked(Vec2{2, 2}, Vec2{8, 8}), "line of sight clear inside the room");
+    }
+}
+
+// ---- the reveal ------------------------------------------------------------
+
+Plan makeTinyPlan() {
+    Plan p;
+    p.wallThickness = 0.45f;
+    RoomPlan r;
+    r.id   = "R1";
+    r.name = "Test Room";
+    r.rect = Rect{0, 0, 10, 10};
+    p.rooms.push_back(r);
+    return p;
+}
+
+void testReveal() {
+    std::printf("Reveal state machine\n");
+
+    Plan p = makeTinyPlan();
+    LightingState ls(p);
+
+    {   // outside the room, nothing is lit
+        ls.update(Vec2{20, 20}, 0.1f);
+        checkNear(ls.levelFor("R1"), 0.0f, 1e-4f, "corridor leaves the room dark");
+        check(ls.currentRoomId().empty(), "no current room when outside");
+    }
+    {   // step inside and the vault fades up over kRevealFadeIn seconds
+        for (int i = 0; i < 100; ++i) ls.update(Vec2{5, 5}, cfg::kRevealFadeIn / 100.0f);
+        checkNear(ls.levelFor("R1"), cfg::kRevealLevel, 1e-3f, "reveal reaches the cap");
+        check(ls.currentRoomId() == "R1", "current room is tracked");
+    }
+    {   // and it stops at the reveal level, not full brightness
+        check(cfg::kRevealLevel < 1.0f, "the reveal never reaches full brightness");
+        check(ls.levelFor("R1") <= cfg::kRevealLevel + 1e-4f, "level never exceeds the cap");
+    }
+    {   // halfway through the fade in it is about half
+        LightingState fresh(p);
+        for (int i = 0; i < 50; ++i) fresh.update(Vec2{5, 5}, cfg::kRevealFadeIn / 100.0f);
+        const float half = fresh.levelFor("R1");
+        check(half > 0.05f * cfg::kRevealLevel && half < 0.95f * cfg::kRevealLevel,
+              "the reveal is a fade, not a switch");
+    }
+    {   // leaving fades it back down to nothing
+        for (int i = 0; i < 100; ++i) ls.update(Vec2{20, 20}, cfg::kRevealFadeOut / 100.0f);
+        checkNear(ls.levelFor("R1"), 0.0f, 1e-3f, "leaving fades the room back out");
+    }
+    {   // the reveal level can be changed at runtime
+        LightingState ex(p);
+        ex.setRevealLevel(1.0f);
+        for (int i = 0; i < 200; ++i) ex.update(Vec2{5, 5}, 0.05f);
+        checkNear(ex.levelFor("R1"), 1.0f, 1e-3f, "exhibition mode reaches full");
+
+        ex.setRevealLevel(0.0f);
+        for (int i = 0; i < 200; ++i) ex.update(Vec2{5, 5}, 0.05f);
+        checkNear(ex.levelFor("R1"), 0.0f, 1e-3f, "lamp only mode fades to nothing");
+
+        ex.setRevealLevel(5.0f);
+        check(ex.revealLevel() <= 1.0f, "reveal level is clamped to 1");
+        ex.setRevealLevel(-2.0f);
+        check(ex.revealLevel() >= 0.0f, "reveal level is clamped to 0");
+    }
+    {   // standing in the doorway must not flicker
+        LightingState edge(p);
+        for (int i = 0; i < 20; ++i)
+            edge.update(Vec2{5, cfg::kRevealMargin * 0.5f}, 0.016f);
+        checkNear(edge.levelFor("R1"), 0.0f, 1e-3f, "the threshold margin prevents flicker");
+    }
+}
+
+// ---- lamp ------------------------------------------------------------------
+
+void testLamp() {
+    std::printf("Lamp\n");
+
+    Lamp lamp;
+    // Looking down -Z (north), lamp starts aligned.
+    lamp.follow(0, 1.65f, 0,  0, 0, -1,  1, 0, 0,  0.016f);
+    checkNear(lamp.posY, 1.65f - cfg::kLampOffsetDown, 1e-4f, "lamp hangs below the eye");
+    checkNear(lamp.posX, cfg::kLampOffsetRight, 1e-4f, "lamp sits to the right of the eye");
+
+    // Snap the view 90 degrees; the lamp should lag, not teleport.
+    lamp.follow(0, 1.65f, 0,  1, 0, 0,  0, 0, 1,  0.016f);
+    check(lamp.dirZ < -0.5f, "lamp lags behind a sudden turn");
+
+    // Given enough time it catches up.
+    for (int i = 0; i < 200; ++i)
+        lamp.follow(0, 1.65f, 0,  1, 0, 0,  0, 0, 1,  0.016f);
+    checkNear(lamp.dirX, 1.0f, 1e-2f, "lamp settles on the view direction");
+
+    const float len = std::sqrt(lamp.dirX * lamp.dirX + lamp.dirY * lamp.dirY +
+                                lamp.dirZ * lamp.dirZ);
+    checkNear(len, 1.0f, 1e-4f, "lamp direction stays normalised");
+
+    check(lamp.innerCos > lamp.outerCos,
+          "inner cone is tighter than the outer cone");
+    check(cfg::kLampOuterDeg < 90.0f,
+          "the lamp is a cone, not a bulb (one shadow pass, not six)");
+
+    // The shadow map camera: straight ahead lands in the middle of the map,
+    // and the edge of the cone still fits inside it.
+    {
+        const glm::mat4 vp = lampProjection(lamp) * lampView(lamp);
+        const glm::vec3 pos(lamp.posX, lamp.posY, lamp.posZ);
+        const glm::vec3 dir(lamp.dirX, lamp.dirY, lamp.dirZ);
+
+        glm::vec4 c = vp * glm::vec4(pos + dir * 5.0f, 1.0f);
+        c /= c.w;
+        checkNear(c.x, 0.0f, 1e-3f, "a point straight ahead of the lamp is centred (x)");
+        checkNear(c.y, 0.0f, 1e-3f, "a point straight ahead of the lamp is centred (y)");
+        check(c.z > -1.0f && c.z < 1.0f, "and is between the near and far planes");
+
+        const float edge = glm::radians(cfg::kLampOuterDeg);
+        const glm::vec3 side = glm::normalize(glm::cross(dir, glm::vec3(0, 1, 0)));
+        const glm::vec3 rim = pos + (dir * std::cos(edge) + side * std::sin(edge)) * 5.0f;
+        glm::vec4 r = vp * glm::vec4(rim, 1.0f);
+        r /= r.w;
+        check(std::fabs(r.x) < 1.0f && std::fabs(r.y) < 1.0f,
+              "the edge of the light cone fits inside the shadow map");
+
+        glm::vec4 b = vp * glm::vec4(pos - dir * 5.0f, 1.0f);
+        check(b.w < 0.0f, "a point behind the lamp is not in its view");
+    }
+}
+
+// ---- walking the real building ---------------------------------------------
+
+// Walks in a straight line toward a target at walking speed, letting the
+// collider push back each step. Returns where the visitor ends up.
+Vec2 walk(const Collider& col, Vec2 from, Vec2 to, float radius) {
+    Vec2 p = col.resolve(from, radius);
+    const float step = cfg::kWalkSpeed / 60.0f;
+    for (int i = 0; i < 2000; ++i) {
+        const float dx = to.x - p.x, dy = to.y - p.y;
+        const float d = std::sqrt(dx * dx + dy * dy);
+        if (d < step) return col.resolve(to, radius);
+        p = col.resolve(Vec2{p.x + dx / d * step, p.y + dy / d * step}, radius);
+    }
+    return p;
+}
+
+float dist(Vec2 a, Vec2 b) {
+    return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+void testWalking() {
+    std::printf("Walking the gallery\n");
+
+    const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+    const Collider col(plan.walls, plan.wallThickness);
+    const float r = cfg::kPlayerRadius;
+
+    {   // through every doorway, both ways
+        int passed = 0;
+        for (const Segment& d : plan.doorways) {
+            const Vec2 mid{(d.a.x + d.b.x) * 0.5f, (d.a.y + d.b.y) * 0.5f};
+            const float nx = d.horizontal() ? 0.0f : 1.0f;
+            const float ny = d.horizontal() ? 1.0f : 0.0f;
+            const Vec2 sideA{mid.x - nx * 1.5f, mid.y - ny * 1.5f};
+            const Vec2 sideB{mid.x + nx * 1.5f, mid.y + ny * 1.5f};
+            if (dist(walk(col, sideA, sideB, r), sideB) < 0.05f &&
+                dist(walk(col, sideB, sideA, r), sideA) < 0.05f)
+                ++passed;
+        }
+        check(passed == static_cast<int>(plan.doorways.size()),
+              "every doorway can be walked through in both directions");
+    }
+    {   // but not through the wall beside a doorway
+        int blocked = 0;
+        for (const RoomPlan& room : plan.rooms) {
+            const Segment d = room.door.segment(room.rect);
+            const float nx = d.horizontal() ? 0.0f : 1.0f;
+            const float ny = d.horizontal() ? 1.0f : 0.0f;
+            // 1 m past the end of the opening, along the wall
+            const float ex = d.horizontal() ? 1.0f : 0.0f;
+            const float ey = d.horizontal() ? 0.0f : 1.0f;
+            const Vec2 beside{d.b.x + ex, d.b.y + ey};
+            const Vec2 from{beside.x - nx * 1.2f, beside.y - ny * 1.2f};
+            const Vec2 to{beside.x + nx * 1.2f, beside.y + ny * 1.2f};
+            const Vec2 end = walk(col, from, to, r);
+            // still on the starting side of the wall line
+            const float side = (end.x - beside.x) * nx + (end.y - beside.y) * ny;
+            if (side < 0.0f) ++blocked;
+        }
+        check(blocked == static_cast<int>(plan.rooms.size()),
+              "the wall beside each doorway stops the visitor");
+    }
+    {   // all the way round the corridor, corners included
+        bool lap = true;
+        Vec2 at = plan.route.front();
+        for (std::size_t i = 1; i <= plan.route.size(); ++i) {
+            const Vec2 next = plan.route[i % plan.route.size()];
+            at = walk(col, at, next, r);
+            if (dist(at, next) > 0.05f) lap = false;
+        }
+        check(lap, "a full lap of the corridor never gets stuck on a corner");
+    }
+    {   // an opening narrower than the visitor cannot be squeezed through
+        auto gapWalls = [](float gap) {
+            return std::vector<Segment>{{{0, 0}, {5.0f - gap * 0.5f, 0}},
+                                        {{5.0f + gap * 0.5f, 0}, {10, 0}}};
+        };
+        const float needed = 2.0f * (r + 0.225f);
+        const Collider wide(gapWalls(needed + 0.3f), 0.45f);
+        const Collider narrow(gapWalls(needed - 0.3f), 0.45f);
+        check(walk(wide, {5, -2}, {5, 2}, r).y > 1.9f, "a gap wider than the visitor lets them through");
+        check(walk(narrow, {5, -2}, {5, 2}, r).y < 0.0f, "a gap narrower than the visitor does not");
+    }
+}
+
+// ---- lintels, vault ends and frames ----------------------------------------
+
+void testBuildingDetail() {
+    std::printf("Lintels, vault ends and frames\n");
+
+    const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+
+    {   // a lintel over every doorway, with an underside facing down at door height
+        Plan doorsOnly = plan;
+        doorsOnly.walls.clear();
+        const gfx::MeshData m = build::extrudeWalls(doorsOnly);
+        int undersides = 0;
+        for (std::size_t i = 0; i + 2 < m.indices.size(); i += 3) {
+            const glm::vec3 a = m.vertices[m.indices[i]].position;
+            const glm::vec3 b = m.vertices[m.indices[i + 1]].position;
+            const glm::vec3 c = m.vertices[m.indices[i + 2]].position;
+            const glm::vec3 n = glm::normalize(glm::cross(b - a, c - a));
+            if (n.y < -0.99f && std::fabs(a.y - cfg::kDoorHeight) < 1e-4f) ++undersides;
+        }
+        check(undersides == 2 * static_cast<int>(plan.doorways.size() + plan.nicheOpenings.size()),
+              "every doorway and niche has a lintel underside facing down at door height");
+    }
+    {   // the vault, ends included, faces into the room
+        const RoomPlan& room = plan.rooms.front();
+        const gfx::MeshData v = build::buildRoomVaults(room, plan.wallHeight, plan.vaultApex);
+        const Vec2 c = room.rect.centre();
+        bool allInward = true;
+        int ends = 0;
+        for (std::size_t i = 0; i + 2 < v.indices.size(); i += 3) {
+            const glm::vec3 a = v.vertices[v.indices[i]].position;
+            const glm::vec3 b = v.vertices[v.indices[i + 1]].position;
+            const glm::vec3 d = v.vertices[v.indices[i + 2]].position;
+            const glm::vec3 n = glm::normalize(glm::cross(b - a, d - a));
+            if (std::fabs(n.y) < 0.01f) ++ends;   // the end walls are vertical
+            // look from below the crown of whichever vault this face belongs to
+            const glm::vec3 mid = (a + b + d) / 3.0f;
+            const float crownX = (mid.x < c.x) ? room.vaults[0].a.x : room.vaults[1].a.x;
+            const glm::vec3 eye(crownX, 3.0f, worldZ(c.y));
+            if (glm::dot(n, eye - mid) <= 0.0f) allInward = false;
+        }
+        check(ends > 0, "the vault has end walls");
+        check(allInward, "every vault face, ends included, faces into the room");
+
+        float minY = 1e9f, maxY = -1e9f;
+        for (const gfx::Vertex& vx : v.vertices) {
+            minY = std::min(minY, -vx.position.z);
+            maxY = std::max(maxY, -vx.position.z);
+        }
+        checkNear(minY, room.rect.y0 + plan.wallThickness * 0.5f, 1e-3f,
+                  "the vault reaches the inside face of one end wall");
+        checkNear(maxY, room.rect.y1 - plan.wallThickness * 0.5f, 1e-3f,
+                  "and the other");
+    }
+    {   // the frame moulding faces out of the wall and wraps the canvas
+        HangPoint hang;
+        hang.span = Segment{{0, 0}, {4, 0}};
+        hang.inwardNormal = Vec2{0, 1};   // room is to the north, world -Z
+        const build::FramedWork w = build::buildFramedWork(hang, 1.4f, 1.0f);
+        const glm::vec3 out(0.0f, 0.0f, -1.0f);
+        bool facesOut = true;
+        float maxDepth = 0.0f;
+        for (std::size_t i = 0; i + 2 < w.frame.indices.size(); i += 3) {
+            const glm::vec3 a = w.frame.vertices[w.frame.indices[i]].position;
+            const glm::vec3 b = w.frame.vertices[w.frame.indices[i + 1]].position;
+            const glm::vec3 c = w.frame.vertices[w.frame.indices[i + 2]].position;
+            const glm::vec3 n = glm::cross(b - a, c - a);
+            if (glm::length(n) < 1e-9f) continue;
+            if (glm::dot(glm::normalize(n), out) < -1e-3f) facesOut = false;
+            maxDepth = std::max(maxDepth, glm::dot(a - w.centre, out));
+        }
+        check(w.frame.triangleCount() > 40, "the moulding is a swept curve, not four boxes");
+        check(facesOut, "no frame face points into the wall");
+        check(maxDepth > cfg::kFrameDepth * 0.9f, "the moulding stands out by about the frame depth");
+    }
+    {   // the ceilings face down, and the oculus is a real hole
+        const gfx::MeshData c = build::buildCeilings(plan);
+        bool allDown = c.triangleCount() > 0;
+        for (std::size_t i = 0; i + 2 < c.indices.size(); i += 3) {
+            const glm::vec3 a = c.vertices[c.indices[i]].position;
+            const glm::vec3 n = glm::cross(c.vertices[c.indices[i + 1]].position - a,
+                                           c.vertices[c.indices[i + 2]].position - a);
+            if (n.y >= 0.0f) allDown = false;
+        }
+        check(allDown, "every corridor ceiling face points down");
+
+        const gfx::MeshData o = build::buildOculusCeiling(plan, cfg::kOculusRim, 64);
+        bool flatDown = true, drumIn = true, coversHole = false;
+        float area = 0.0f;
+        const glm::vec3 centre(worldX(plan.oculusCentre.x), 0.0f, worldZ(plan.oculusCentre.y));
+        for (std::size_t i = 0; i + 2 < o.indices.size(); i += 3) {
+            const glm::vec3 a = o.vertices[o.indices[i]].position;
+            const glm::vec3 b = o.vertices[o.indices[i + 1]].position;
+            const glm::vec3 cc = o.vertices[o.indices[i + 2]].position;
+            const glm::vec3 n = glm::cross(b - a, cc - a);
+            const glm::vec3 mid = (a + b + cc) / 3.0f;
+            if (std::fabs(a.y - plan.wallHeight) < 1e-4f && std::fabs(b.y - a.y) < 1e-4f &&
+                std::fabs(cc.y - a.y) < 1e-4f) {
+                if (n.y >= 0.0f) flatDown = false;
+                area += 0.5f * glm::length(n);
+                const glm::vec3 d = mid - glm::vec3(centre.x, mid.y, centre.z);
+                if (glm::length(d) < plan.oculusRadius * 0.95f) coversHole = true;
+            } else {
+                // a drum face: its normal points back towards the centre line
+                const glm::vec3 toAxis(centre.x - mid.x, 0.0f, centre.z - mid.z);
+                if (glm::dot(n, toAxis) <= 0.0f) drumIn = false;
+            }
+        }
+        const float wantArea = plan.atriumRect.width() * plan.atriumRect.height() -
+                               3.14159265f * plan.oculusRadius * plan.oculusRadius;
+        check(flatDown, "the atrium ceiling faces down");
+        check(!coversHole, "nothing covers the oculus");
+        checkNear(area, wantArea, wantArea * 0.01f, "the ceiling covers the atrium less the oculus");
+        check(drumIn, "the drum round the oculus faces inward");
+    }
+}
+
+// ---- statues ----------------------------------------------------------------
+
+// Writes bytes to a temporary file.
+std::string writeTempBytes(const std::string& name, const std::vector<unsigned char>& bytes) {
+    const std::string path = (std::filesystem::temp_directory_path() / name).string();
+    std::ofstream(path, std::ios::binary).write(reinterpret_cast<const char*>(bytes.data()),
+                                                static_cast<std::streamsize>(bytes.size()));
+    return path;
+}
+
+// A one-triangle glTF: positions, texture coordinates and 16 bit indices.
+// The node moves it by (1, 2, 3) and scales x by sx.
+std::string writeTriangleGltf(const std::string& name, float sx) {
+    std::vector<unsigned char> bin;
+    auto put = [&](const void* p, std::size_t n) {
+        const auto* b = static_cast<const unsigned char*>(p);
+        bin.insert(bin.end(), b, b + n);
+    };
+    const float pos[9] = {0, 0, 0,  1, 0, 0,  0, 1, 0};
+    const float uv[6]  = {0, 0,  1, 0,  0, 1};
+    const unsigned short idx[3] = {0, 1, 2};
+    put(pos, sizeof(pos));
+    put(uv, sizeof(uv));
+    put(idx, sizeof(idx));
+    writeTempBytes(name + ".bin", bin);
+
+    const std::string gltf = std::string(R"({
+      "asset": {"version": "2.0"},
+      "scene": 0,
+      "scenes": [{"nodes": [0]}],
+      "nodes": [{"translation": [1, 2, 3], "scale": [)") + std::to_string(sx) + R"(, 1, 1], "mesh": 0}],
+      "meshes": [{"primitives": [{"attributes": {"POSITION": 0, "TEXCOORD_0": 1}, "indices": 2, "material": 0}]}],
+      "materials": [{"pbrMetallicRoughness": {"baseColorTexture": {"index": 0}}}],
+      "textures": [{"source": 0}],
+      "images": [{"uri": "stone.png"}],
+      "buffers": [{"uri": ")" + name + R"(.bin", "byteLength": 66}],
+      "bufferViews": [
+        {"buffer": 0, "byteOffset": 0,  "byteLength": 36},
+        {"buffer": 0, "byteOffset": 36, "byteLength": 24},
+        {"buffer": 0, "byteOffset": 60, "byteLength": 6}],
+      "accessors": [
+        {"bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3"},
+        {"bufferView": 1, "componentType": 5126, "count": 3, "type": "VEC2"},
+        {"bufferView": 2, "componentType": 5123, "count": 3, "type": "SCALAR"}]
+    })";
+    return writeTemp(name + ".gltf", gltf);
+}
+
+bool modelFails(const std::string& path, const std::string& expectInMessage) {
+    try {
+        model::load(path);
+    } catch (const std::exception& e) {
+        return std::string(e.what()).find(expectInMessage) != std::string::npos;
+    }
+    return false;
+}
+
+void testModels() {
+    std::printf("Loading statues (glTF)\n");
+
+    {   const model::Model m = model::load(writeTriangleGltf("lumen_tri", 1.0f));
+        check(m.parts.size() == 1 && m.triangleCount() == 1, "a one-triangle file gives one triangle");
+        const gfx::MeshData& mesh = m.parts[0].mesh;
+        const glm::vec3 b = mesh.vertices[1].position;
+        checkNear(b.x, 2.0f, 1e-5f, "the node's translation is applied");
+        checkNear(b.y, 2.0f, 1e-5f, "on every axis");
+        checkNear(mesh.vertices[0].normal.z, 1.0f, 1e-5f, "missing normals are worked out from the triangle");
+        checkNear(mesh.vertices[2].uv.y, 0.0f, 1e-5f, "texture v is flipped to match our flipped images");
+        check(m.parts[0].albedoPath.find("stone.png") != std::string::npos &&
+              m.parts[0].albedoPath.find(std::filesystem::temp_directory_path().filename().string()) !=
+                  std::string::npos,
+              "texture paths are found next to the model file");
+    }
+    {   // mirrored by the node: the triangle must still face the same way as its normal
+        const model::Model m = model::load(writeTriangleGltf("lumen_mirror", -1.0f));
+        const gfx::MeshData& mesh = m.parts[0].mesh;
+        const glm::vec3 a = mesh.vertices[mesh.indices[0]].position;
+        const glm::vec3 n = glm::cross(mesh.vertices[mesh.indices[1]].position - a,
+                                       mesh.vertices[mesh.indices[2]].position - a);
+        check(glm::dot(n, mesh.vertices[0].normal) > 0.0f, "a mirroring node does not turn faces inside out");
+    }
+    {   const model::Model m = model::load(writeTriangleGltf("lumen_fit", 1.0f));
+        const glm::mat4 f = model::fitToHeight(m, 5.0f);
+        float lo = 1e9f, hi = -1e9f;
+        for (const gfx::Vertex& v : m.parts[0].mesh.vertices) {
+            const float y = (f * glm::vec4(v.position, 1.0f)).y;
+            lo = std::min(lo, y);
+            hi = std::max(hi, y);
+        }
+        checkNear(lo, 0.0f, 1e-4f, "fitToHeight stands the model on the floor");
+        checkNear(hi, 5.0f, 1e-4f, "at the height asked for");
+    }
+    {   check(modelFails("no/such/model.gltf", "Could not load model"), "a missing model gives a clear message");
+        const std::string bad = writeTemp("lumen_bad_model.gltf", "{ \"meshes\": [ ");
+        check(modelFails(bad, "lumen_bad_model.gltf"), "a broken model names the file");
+        const std::string empty = writeTemp("lumen_empty_model.gltf", "{ \"asset\": {\"version\": \"2.0\"} }");
+        check(modelFails(empty, "no triangles"), "a model with no triangles says so");
+    }
+    {   // a real scan: the Discobolus is upright and the right size once fitted
+        const model::Model m =
+            model::load(std::string(LUMEN_ASSET_DIR) + "models/discobolus_the_discus_thrower/scene.gltf");
+        check(m.triangleCount() == 201698, "the Discobolus scan has all its triangles");
+        check(m.size().y > m.size().x && m.size().y > m.size().z, "it stands upright, y is up");
+    }
+}
+
+void testSculpture() {
+    std::printf("Placing statues and reliefs\n");
+
+    const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+    const sculpture::Catalogue cat = sculpture::load(std::string(LUMEN_ASSET_DIR) + "sculpture.json");
+    check(cat.statues.size() == 5, "five statues in the catalogue");
+    check(cat.reliefs.size() == 5, "five reliefs in the catalogue");
+    {   bool credited = true, filesThere = true, placed = true;
+        for (const auto& s : cat.statues) {
+            if (s.credit.empty()) credited = false;
+            if (!std::filesystem::exists(std::string(LUMEN_ASSET_DIR) + s.model)) filesThere = false;
+            try { sculpture::spotFor(plan, s.place); } catch (const std::exception&) { placed = false; }
+        }
+        for (const auto& r : cat.reliefs) {
+            if (r.credit.empty()) credited = false;
+            if (!std::filesystem::exists(std::string(LUMEN_ASSET_DIR) + r.image)) filesThere = false;
+        }
+        check(credited, "every statue and relief has a credit");
+        check(filesThere, "every model and image file is in assets/");
+        check(placed, "every statue has a real place");
+    }
+    {   // each niche faces back across the corridor
+        bool intoCorridor = true;
+        for (int n = 0; n < static_cast<int>(plan.niches.size()); ++n) {
+            const sculpture::Spot s = sculpture::spotFor(plan, "niche " + std::to_string(n));
+            const Vec2 ahead{s.at.x + s.facing.x * 2.0f, s.at.y + s.facing.y * 2.0f};
+            if (!plan.corridorOuter.contains(ahead) || plan.corridorInner.contains(ahead)) intoCorridor = false;
+        }
+        check(intoCorridor, "every niche statue faces into the corridor");
+    }
+    {   const sculpture::Spot s = sculpture::spotFor(plan, "atrium");
+        checkNear(s.at.x, plan.oculusCentre.x, 1e-5f, "the atrium statue stands under the oculus");
+        check(s.facing.x < -0.9f, "and faces the way in, to the west");
+        bool threw = false;
+        try { sculpture::spotFor(plan, "niche 9"); } catch (const std::exception&) { threw = true; }
+        check(threw, "an unknown place is refused");
+    }
+    {   // a scan's front (+Z) turns to face the visitor
+        const sculpture::Spot s = sculpture::spotFor(plan, "niche 2");   // faces east
+        const glm::mat4 t = sculpture::statueTransform(s, 0.5f, 0.0f);
+        const glm::vec3 front = glm::vec3(t * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f));
+        checkNear(front.x, 1.0f, 1e-4f, "the front turns to face east");
+        const glm::vec3 base = glm::vec3(t * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        checkNear(base.y, 0.5f, 1e-5f, "and stands on top of the plinth");
+    }
+    {   // reliefs sit on the atrium wall and face the corridor
+        bool onWall = true, facesCorridor = true, faceOut = true;
+        for (const auto& r : cat.reliefs) {
+            const sculpture::WallSpot w = sculpture::wallSpotFor(plan, r.wall, r.at, r.centreHeight);
+            const Vec2 out{w.centre.x + w.normal.x * 1.0f, -(w.centre.z + w.normal.z * 1.0f)};
+            if (!plan.corridorOuter.contains(out) || plan.atriumRect.contains(out)) facesCorridor = false;
+            const Vec2 c{w.centre.x, -w.centre.z};
+            const Rect& a = plan.atriumRect;
+            const float half = plan.wallThickness * 0.5f;
+            const bool onFace = std::fabs(c.y - (a.y1 + half)) < 1e-4f || std::fabs(c.y - (a.y0 - half)) < 1e-4f ||
+                                std::fabs(c.x - (a.x1 + half)) < 1e-4f || std::fabs(c.x - (a.x0 - half)) < 1e-4f;
+            if (!onFace) onWall = false;
+            const sculpture::Panel p = sculpture::buildPanel(w, r.width, r.width);
+            const glm::vec3 n = p.face.vertices[0].normal;
+            if (glm::dot(n, w.normal) < 0.99f) faceOut = false;
+        }
+        check(onWall, "every relief is on an outer face of the atrium wall");
+        check(facesCorridor, "and faces into the corridor");
+        check(faceOut, "the carved image faces away from the wall");
+    }
+    {   // nobody walks through the Apollo's plinth
+        std::vector<Segment> solid = plan.walls;
+        for (const Segment& s : sculpture::plinthOutlines(plan, cat)) solid.push_back(s);
+        const Collider col(solid, plan.wallThickness);
+        const Vec2 end = walk(col, Vec2{16.0f, plan.oculusCentre.y}, plan.oculusCentre, cfg::kPlayerRadius);
+        check(end.x < plan.oculusCentre.x - 0.8f, "the visitor stops at the Apollo's plinth");
+        check(end.x > plan.oculusCentre.x - 1.6f, "but can walk right up to it");
+    }
+}
+
+// ---- the torch bearer -------------------------------------------------------
+
+// A two-bone arm: "root" at the origin and "tip" 1 m above it. The triangle's
+// top corner follows the tip; the clip "bend" turns the tip 90 degrees about z.
+std::string writeArmGltf(const std::string& name) {
+    std::vector<unsigned char> bin;
+    auto put = [&](const void* p, std::size_t n) {
+        const auto* b = static_cast<const unsigned char*>(p);
+        bin.insert(bin.end(), b, b + n);
+    };
+    const float pos[9] = {0, 0, 0,  1, 0, 0,  0, 2, 0};
+    const unsigned short joints[12] = {0, 0, 0, 0,  0, 0, 0, 0,  1, 0, 0, 0};
+    const float weights[12] = {1, 0, 0, 0,  1, 0, 0, 0,  1, 0, 0, 0};
+    const unsigned short idx[4] = {0, 1, 2, 0};   // the last one pads to 4 bytes
+    const float ibm[32] = {1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1,
+                           1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, -1, 0, 1};
+    const float times[2] = {0, 1};
+    const float s = 0.70710678f;
+    const float turns[8] = {0, 0, 0, 1,  0, 0, s, s};
+    put(pos, sizeof(pos));          //   0
+    put(joints, sizeof(joints));    //  36
+    put(weights, sizeof(weights));  //  60
+    put(idx, sizeof(idx));          // 108
+    put(ibm, sizeof(ibm));          // 116
+    put(times, sizeof(times));      // 244
+    put(turns, sizeof(turns));      // 252, ends at 284
+    writeTempBytes(name + ".bin", bin);
+
+    return writeTemp(name + ".gltf", std::string(R"({
+      "asset": {"version": "2.0"},
+      "scene": 0,
+      "scenes": [{"nodes": [0, 2]}],
+      "nodes": [
+        {"name": "root", "children": [1]},
+        {"name": "tip", "translation": [0, 1, 0]},
+        {"name": "arm", "mesh": 0, "skin": 0}],
+      "skins": [{"joints": [0, 1], "inverseBindMatrices": 4}],
+      "meshes": [{"primitives": [{"attributes": {"POSITION": 0, "JOINTS_0": 1, "WEIGHTS_0": 2}, "indices": 3}]}],
+      "animations": [{"name": "bend",
+        "samplers": [{"input": 5, "output": 6, "interpolation": "LINEAR"}],
+        "channels": [{"sampler": 0, "target": {"node": 1, "path": "rotation"}}]}],
+      "buffers": [{"uri": ")") + name + R"(.bin", "byteLength": 284}],
+      "bufferViews": [
+        {"buffer": 0, "byteOffset": 0,   "byteLength": 36},
+        {"buffer": 0, "byteOffset": 36,  "byteLength": 24},
+        {"buffer": 0, "byteOffset": 60,  "byteLength": 48},
+        {"buffer": 0, "byteOffset": 108, "byteLength": 6},
+        {"buffer": 0, "byteOffset": 116, "byteLength": 128},
+        {"buffer": 0, "byteOffset": 244, "byteLength": 8},
+        {"buffer": 0, "byteOffset": 252, "byteLength": 32}],
+      "accessors": [
+        {"bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3"},
+        {"bufferView": 1, "componentType": 5123, "count": 3, "type": "VEC4"},
+        {"bufferView": 2, "componentType": 5126, "count": 3, "type": "VEC4"},
+        {"bufferView": 3, "componentType": 5123, "count": 3, "type": "SCALAR"},
+        {"bufferView": 4, "componentType": 5126, "count": 2, "type": "MAT4"},
+        {"bufferView": 5, "componentType": 5126, "count": 2, "type": "SCALAR"},
+        {"bufferView": 6, "componentType": 5126, "count": 2, "type": "VEC4"}]
+    })");
+}
+
+// Where a skinned vertex ends up, worked out on the CPU the way the shader does it.
+glm::vec3 skinned(const gfx::SkinnedVertex& v, const std::vector<glm::mat4>& joints) {
+    glm::mat4 m(0.0f);
+    for (int c = 0; c < 4; ++c) m += joints[v.joints[c]] * v.weights[c];
+    return glm::vec3(m * glm::vec4(v.position, 1.0f));
+}
+
+void testSkeleton() {
+    std::printf("Bones and animation\n");
+
+    const model::SkinnedModel arm = model::loadSkinned(writeArmGltf("lumen_arm"));
+    const skel::Skeleton& sk = arm.skeleton;
+    check(sk.joints.size() == 2 && arm.triangleCount() == 1, "the arm has two joints and one triangle");
+    check(arm.clips.size() == 1 && arm.clips[0].name == "bend", "its clip is loaded by name");
+    checkNear(arm.clips[0].duration, 1.0f, 1e-5f, "the clip lasts as long as its last key");
+    checkNear(arm.boundsMax.y, 2.0f, 1e-5f, "in the rest pose the arm is 2 m tall");
+
+    const gfx::SkinnedVertex& top = arm.parts[0].mesh.vertices[2];
+    const std::vector<int> binding = skel::bindClip(arm.clips[0], sk);
+    check(binding.size() == 1 && binding[0] == sk.find("tip"), "the track finds its bone by name");
+
+    auto at = [&](float t, bool loop) {
+        skel::Pose p = skel::restPose(sk);
+        skel::sample(arm.clips[0], binding, t, loop, p);
+        return skinned(top, skel::jointMatrices(sk, skel::globals(sk, p)));
+    };
+    {   const glm::vec3 rest = skinned(top, skel::jointMatrices(sk, skel::globals(sk, skel::restPose(sk))));
+        checkNear(rest.y, 2.0f, 1e-5f, "in the rest pose the skin is where it was modelled");
+        const glm::vec3 bent = at(1.0f, false);
+        checkNear(bent.x, -1.0f, 1e-4f, "bent 90 degrees, the top swings round the elbow");
+        checkNear(bent.y, 1.0f, 1e-4f, "to the elbow's height");
+        const glm::vec3 half = at(0.5f, false);
+        checkNear(half.x, -0.70710678f, 1e-4f, "half way, it has turned 45 degrees (slerp)");
+        checkNear(half.y, 1.70710678f, 1e-4f, "and keeps its length");
+        const glm::vec3 wrapped = at(1.25f, true);
+        const glm::vec3 early = at(0.25f, true);
+        checkNear(wrapped.x, early.x, 1e-4f, "a looping clip wraps round");
+        checkNear(at(3.0f, false).x, -1.0f, 1e-4f, "a clip that does not loop holds its last frame");
+    }
+    {   // blending half way between rest and fully bent gives the 45 degree pose
+        skel::Pose bent = skel::restPose(sk);
+        skel::sample(arm.clips[0], binding, 1.0f, false, bent);
+        const skel::Pose mid = skel::blend(skel::restPose(sk), bent, 0.5f);
+        const glm::vec3 p = skinned(top, skel::jointMatrices(sk, skel::globals(sk, mid)));
+        checkNear(p.x, -0.70710678f, 1e-4f, "blending two poses turns smoothly between them");
+    }
+    {   // a walk that travels is held on the spot, keeping its bob
+        skel::Clip walk;
+        skel::Track tr;
+        tr.node = "root";
+        tr.path = skel::Path::Translation;
+        tr.times = {0.0f, 1.0f};
+        tr.values = {glm::vec4(0.0f), glm::vec4(2.0f, 0.1f, 3.0f, 0.0f)};
+        walk.tracks.push_back(tr);
+        walk.duration = 1.0f;
+        skel::keepInPlace(walk, sk);
+        const glm::vec4 v = walk.tracks[0].values[1];
+        check(std::fabs(v.x) < 1e-5f && std::fabs(v.z) < 1e-5f, "keepInPlace removes the travel");
+        checkNear(v.y, 0.1f, 1e-5f, "but keeps the up and down");
+    }
+    {   // a clip from a bigger character of the same rig
+        skel::Clip other;
+        skel::Track hips, turn, grow, stray;
+        hips.node = "root";  hips.path = skel::Path::Translation;
+        hips.times = {0.0f, 1.0f};
+        hips.values = {glm::vec4(0, 2, 0, 0), glm::vec4(0, 3, 0, 0)};
+        turn.node = "tip";   turn.path = skel::Path::Rotation;
+        turn.times = {0.0f};  turn.values = {glm::vec4(0, 0, 0, 1)};
+        grow.node = "tip";   grow.path = skel::Path::Scale;
+        grow.times = {0.0f};  grow.values = {glm::vec4(2, 2, 2, 0)};
+        stray.node = "tail"; stray.path = skel::Path::Rotation;
+        stray.times = {0.0f}; stray.values = {glm::vec4(0, 0, 0, 1)};
+        skel::Track still = hips, bob = hips;
+        still.node = "tip"; still.values = {glm::vec4(0, 5, 0, 0), glm::vec4(0, 5, 0, 0)};
+        other.tracks = {hips, turn, grow, stray, still};
+        skel::Skeleton tall = sk;
+        tall.nodes[static_cast<std::size_t>(tall.find("root"))].t = glm::vec3(0, 1, 0);
+        const int kept = skel::retarget(other, tall);
+        check(kept == 2, "retarget keeps the hips and the turns, and drops scale, unknown bones "
+                         "and bone lengths from the other character");
+        skel::Clip bobbing;
+        bob.node = "tip";
+        bob.values = {glm::vec4(0, 1, 0, 0), glm::vec4(0, 1.2f, 0, 0)};
+        bobbing.tracks = {hips, bob};
+        check(skel::retarget(bobbing, tall) == 2, "a bone that really moves, like the hips bobbing, keeps its move");
+        checkNear(other.tracks[0].values[1].y, 1.5f, 1e-5f, "the hips move in proportion to this character's height");
+    }
+}
+
+void testIntro() {
+    std::printf("The torch bearer's intro\n");
+
+    const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
+    const sculpture::Catalogue cat = sculpture::load(std::string(LUMEN_ASSET_DIR) + "sculpture.json");
+    std::vector<Segment> solid = plan.walls;
+    for (const Segment& s : sculpture::plinthOutlines(plan, cat)) solid.push_back(s);
+    const Collider col(solid, plan.wallThickness);
+    const Vec2 visitor = plan.spawn();
+    const float dt = 1.0f / 30.0f;
+
+    Intro intro(plan, visitor);
+    check(intro.stage() == Intro::Stage::Waiting, "it starts with the bearer waiting");
+    check(intro.bearerHasTorch() && intro.visitorLocked(), "holding the only light, and you cannot walk yet");
+    check(intro.handover() == 0.0f && intro.prompt().empty(), "no prompt yet");
+    check(std::string(intro.clip()) == "idle_torch", "standing with the torch held up");
+    check(intro.frozen(), "as stone, before it wakes");
+    checkNear(intro.elevation(), cfg::kBearerPlinthHeight, 1e-5f, "on top of its plinth");
+    {   bool clear = true;
+        for (std::size_t i = 1; i < intro.path().size(); ++i)
+            if (col.segmentBlocked(intro.path()[i - 1], intro.path()[i])) clear = false;
+        check(clear, "the bearer's route goes through the doorway, not a wall or the plinth");
+        check(plan.atriumRect.contains(intro.path().front()), "and starts in the atrium");
+    }
+
+    bool walked = false, wokeUp = false, steppedDown = false;
+    float lastElevation = intro.elevation();
+    bool neverRises = true;
+    for (int i = 0; i < 30 * 60 && intro.stage() != Intro::Stage::Offering; ++i) {
+        intro.update(dt, false);
+        if (std::string(intro.clip()) == "walk") walked = true;
+        if (intro.stage() == Intro::Stage::Approaching && !intro.frozen()) wokeUp = true;
+        if (intro.elevation() > lastElevation + 1e-6f) neverRises = false;
+        lastElevation = intro.elevation();
+        if (intro.elevation() < 1e-6f) steppedDown = true;
+    }
+    check(wokeUp, "the statue comes alive");
+    check(walked && steppedDown, "steps down off its plinth and walks out");
+    check(neverRises, "the step down only ever goes down");
+    check(intro.stage() == Intro::Stage::Offering, "and holds out the torch");
+    checkNear(dist(intro.position(), visitor), cfg::kBearerStandOff, 0.05f, "at arm's length from you");
+    check(std::string(intro.clip()) == "give", "playing the give clip");
+
+    intro.update(dt, true);   // too early: not listened to yet
+    check(intro.bearerHasTorch(), "E does nothing before the prompt shows");
+    for (int i = 0; i < 60; ++i) intro.update(dt, false);
+    check(!intro.prompt().empty(), "then the prompt shows");
+    {   // facing you
+        const float want = std::atan2(visitor.x - intro.position().x, visitor.y - intro.position().y) * 57.2957795f;
+        const float diff = std::fabs(std::fmod(intro.headingDeg() - want + 540.0f, 360.0f) - 180.0f);
+        check(diff < 2.0f, "the bearer turns to face you");
+    }
+
+    intro.update(dt, true);
+    check(!intro.bearerHasTorch() && !intro.visitorLocked(), "E takes the lamp, and you can walk");
+    for (int i = 0; i < 6; ++i) intro.update(dt, false);
+    check(intro.handover() > 0.0f && intro.handover() < 1.0f, "the light moves into your hand over a moment");
+
+    for (int i = 0; i < 30 * 60 && intro.stage() != Intro::Stage::Done; ++i) intro.update(dt, false);
+    check(intro.stage() == Intro::Stage::Done, "the bearer goes back");
+    check(dist(intro.position(), intro.path().front()) < 1e-3f, "to stand by the Apollo");
+    checkNear(intro.elevation(), cfg::kBearerPlinthHeight, 1e-5f, "back up on its plinth");
+    checkNear(intro.handover(), 1.0f, 1e-5f, "and the light is all yours");
+    check(!intro.frozen(), "it is still alive for a moment");
+    for (int i = 0; i < 60; ++i) intro.update(dt, false);
+    check(intro.frozen(), "then turns back to stone");
+
+    {   Intro waitIt(plan, visitor);
+        for (int i = 0; i < 30 * 60 && waitIt.bearerHasTorch(); ++i) waitIt.update(dt, false);
+        check(!waitIt.bearerHasTorch(), "if you never press E, it is handed over anyway");
+    }
+    {   Intro skipped(plan, visitor);
+        skipped.skip();
+        check(skipped.stage() == Intro::Stage::Done && skipped.handover() == 1.0f && !skipped.visitorLocked(),
+              "skipping gives you the lamp at once");
+    }
+    {   BearerSettings s;
+        std::string why;
+        check(!loadBearerSettings("no/such/intro.json", s, why) && why.find("missing") != std::string::npos,
+              "a missing intro.json says so");
+        check(loadBearerSettings(std::string(LUMEN_ASSET_DIR) + "intro.json", s, why) && !s.character.empty(),
+              "the real intro.json names a character");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -939,6 +1868,16 @@ int main() {
     testAnimation();
     testGif();
     testAnimations();
+    testWinding();
+    testCollision();
+    testReveal();
+    testLamp();
+    testWalking();
+    testBuildingDetail();
+    testModels();
+    testSculpture();
+    testSkeleton();
+    testIntro();
 
     std::printf("\n%d checks, %d failures\n\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;
