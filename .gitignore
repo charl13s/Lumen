@@ -7,13 +7,17 @@ cmake-build-*/
 *.ilk
 *.obj
 
-# The images lumen_cp1 saves
+# vcpkg
+vcpkg_installed/
+
+# The images and GIFs lumen_pages saves
 output/
 
 # IDEs
 .vs/
 .vscode/
 .idea/
+*.user
 
 # OS
 Thumbs.db
@@ -21,9 +25,3 @@ Thumbs.db
 
 tools/__pycache__/
 *.pyc
-
-# Additional local ignore rules
-vcpkg_installed/
-*.user
-CMakeSettings.json.user
-*.swp
