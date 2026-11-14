@@ -1,7 +1,9 @@
 #include "Gfx.h"
+#include "Raster.h"
 
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -11,6 +13,15 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+// Anisotropic filtering constants. vcpkg's glad does not include them, so they
+// are defined here. The values come from the extension spec.
+#ifndef GL_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
+#endif
+#ifndef GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#endif
 
 namespace lumen::gfx {
 namespace {
@@ -91,8 +102,15 @@ void Shader::set(const std::string& n, const glm::vec2& v) const {
 void Shader::set(const std::string& n, const glm::vec3& v) const {
     glUniform3f(location(n), v.x, v.y, v.z);
 }
+void Shader::set(const std::string& n, const glm::mat3& v) const {
+    glUniformMatrix3fv(location(n), 1, GL_FALSE, &v[0][0]);
+}
 void Shader::set(const std::string& n, const glm::mat4& v) const {
     glUniformMatrix4fv(location(n), 1, GL_FALSE, &v[0][0]);
+}
+void Shader::set(const std::string& n, const std::vector<glm::mat4>& v) const {
+    if (!v.empty())
+        glUniformMatrix4fv(location(n), static_cast<GLsizei>(v.size()), GL_FALSE, &v[0][0][0]);
 }
 
 // ---- TextureCache ----------------------------------------------------------
@@ -104,13 +122,26 @@ TextureCache::~TextureCache() {
 
 namespace {
 
+// The driver's maximum anisotropy, or 1.0 if unsupported (the query then
+// raises an error). Asked once.
+float maxAnisotropy() {
+    static float cached = -1.0f;
+    if (cached < 0.0f) {
+        while (glGetError() != GL_NO_ERROR) {}      // clear any earlier error
+        float value = 1.0f;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
+        cached = (glGetError() == GL_NO_ERROR) ? value : 1.0f;
+    }
+    return cached;
+}
+
 unsigned uploadPixels(const unsigned char* px, int w, int h, int channels,
                       Texture::Kind kind) {
     unsigned id = 0;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
 
-    // sRGB for anything the eye reads as colour; linear for data like normals.
+    // sRGB for colours, linear for data like normals.
     GLenum internal, format;
     if (channels == 4) {
         internal = (kind == Texture::Kind::Colour) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
@@ -123,20 +154,23 @@ unsigned uploadPixels(const unsigned char* px, int w, int h, int channels,
         format   = GL_RED;
     }
 
+    // Our rows are packed tight. OpenGL expects each row to start on 4 bytes,
+    // so an RGB image whose width is not a multiple of 4 would be read past its end.
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(internal), w, h, 0,
                  format, GL_UNSIGNED_BYTE, px);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // Repeat, so wall and floor materials tile. Clamping smeared the edge pixels
+    // over everything past the first tile.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Anisotropic filtering. In a loop corridor you see paintings at grazing
-    // angles constantly, and without this they turn to mush.
-    if (GLAD_GL_EXT_texture_filter_anisotropic) {
-        float maxAniso = 1.0f;
-        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+    // Anisotropic filtering keeps paintings sharp when seen at an angle.
+    const float maxAniso = maxAnisotropy();
+    if (maxAniso > 1.0f) {
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
                         (maxAniso < 8.0f) ? maxAniso : 8.0f);
     }
@@ -172,6 +206,54 @@ const Texture* TextureCache::get(const std::string& path, Texture::Kind kind) {
     return out;
 }
 
+const Texture* TextureCache::fromMemory(const std::string& key,
+                                        const std::vector<unsigned char>& bytes,
+                                        Texture::Kind kind) {
+    const std::string k = key + (kind == Texture::Kind::Colour ? "|mc" : "|md");
+    auto it = cache_.find(k);
+    if (it != cache_.end()) return it->second.get();
+
+    int w = 0, h = 0, channels = 0;
+    stbi_set_flip_vertically_on_load(1);
+    unsigned char* px = bytes.empty() ? nullptr
+                      : stbi_load_from_memory(bytes.data(), static_cast<int>(bytes.size()),
+                                              &w, &h, &channels, 0);
+    if (!px) {
+        std::fprintf(stderr, "[gfx] Could not read the image packed in '%s'.\n", key.c_str());
+        return white();
+    }
+    auto tex = std::make_unique<Texture>();
+    tex->id_ = uploadPixels(px, w, h, channels, kind);
+    tex->w_  = w;
+    tex->h_  = h;
+    stbi_image_free(px);
+    const Texture* out = tex.get();
+    cache_.emplace(k, std::move(tex));
+    return out;
+}
+
+const Texture* TextureCache::fromCanvas(const std::string& key, const raster::Canvas& image) {
+    const std::string k = key + "|canvas";
+    auto it = cache_.find(k);
+    if (it != cache_.end()) return it->second.get();
+    if (image.width() <= 0 || image.height() <= 0) return white();
+
+    // A Canvas starts at the top row; OpenGL textures start at the bottom.
+    const std::size_t row = static_cast<std::size_t>(image.width()) * 4;
+    std::vector<unsigned char> flipped(image.byteSize());
+    for (int y = 0; y < image.height(); ++y)
+        std::memcpy(&flipped[static_cast<std::size_t>(image.height() - 1 - y) * row],
+                    image.pixels() + static_cast<std::size_t>(y) * row, row);
+
+    auto tex = std::make_unique<Texture>();
+    tex->id_ = uploadPixels(flipped.data(), image.width(), image.height(), 4, Texture::Kind::Colour);
+    tex->w_  = image.width();
+    tex->h_  = image.height();
+    const Texture* out = tex.get();
+    cache_.emplace(k, std::move(tex));
+    return out;
+}
+
 const Texture* TextureCache::reliefFrom(const std::string& colourPath, float strength) {
     const std::string key = colourPath + "|relief";
     auto it = cache_.find(key);
@@ -185,9 +267,7 @@ const Texture* TextureCache::reliefFrom(const std::string& colourPath, float str
         return flatNormal();
     }
 
-    // Sobel on the image's luminance gives a height-field gradient; treat that
-    // as surface slope and you get fake impasto. Van Gogh's brushwork catches
-    // the lamp and the painting stops being a flat rectangle.
+    // A Sobel filter on the brightness gives a slope, used as the surface normal.
     auto lum = [&](int x, int y) -> float {
         x = (x < 0) ? 0 : (x >= w ? w - 1 : x);
         y = (y < 0) ? 0 : (y >= h ? h - 1 : y);
@@ -351,12 +431,121 @@ std::unique_ptr<Mesh> Mesh::upload(const MeshData& data) {
     return m;
 }
 
+std::unique_ptr<Mesh> Mesh::upload(const SkinnedMeshData& data) {
+    auto m = std::unique_ptr<Mesh>(new Mesh());
+    m->indexCount_ = data.indices.size();
+    m->tris_       = data.indices.size() / 3;
+    if (data.vertices.empty() || data.indices.empty()) return m;
+
+    glGenVertexArrays(1, &m->vao_);
+    glGenBuffers(1, &m->vbo_);
+    glGenBuffers(1, &m->ebo_);
+    glBindVertexArray(m->vao_);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m->vbo_);
+    glBufferData(GL_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(data.vertices.size() * sizeof(SkinnedVertex)),
+                 data.vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(data.indices.size() * sizeof(unsigned)),
+                 data.indices.data(), GL_STATIC_DRAW);
+
+    const GLsizei stride = sizeof(SkinnedVertex);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride,
+                          reinterpret_cast<void*>(offsetof(SkinnedVertex, position)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride,
+                          reinterpret_cast<void*>(offsetof(SkinnedVertex, normal)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride,
+                          reinterpret_cast<void*>(offsetof(SkinnedVertex, uv)));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride,
+                          reinterpret_cast<void*>(offsetof(SkinnedVertex, tangent)));
+    // Joint numbers stay whole numbers in the shader, so they use the I version.
+    glEnableVertexAttribArray(4);
+    glVertexAttribIPointer(4, 4, GL_UNSIGNED_SHORT, stride,
+                           reinterpret_cast<void*>(offsetof(SkinnedVertex, joints)));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, stride,
+                          reinterpret_cast<void*>(offsetof(SkinnedVertex, weights)));
+
+    glBindVertexArray(0);
+    return m;
+}
+
 void Mesh::draw() const {
     if (!vao_ || indexCount_ == 0) return;
     glBindVertexArray(vao_);
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexCount_),
                    GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+// ---- ShadowMap -------------------------------------------------------------
+
+namespace {
+
+unsigned makeDepthTexture(int size) {
+    unsigned t = 0;
+    glGenTextures(1, &t);
+    glBindTexture(GL_TEXTURE_2D, t);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, size, size, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Outside the map counts as lit.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    const float border[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+    // Let the GPU do the depth comparison, so a lookup returns 0 (shadow) to 1 (lit).
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    return t;
+}
+
+} // namespace
+
+ShadowMap::~ShadowMap() {
+    if (fbo_) glDeleteFramebuffers(1, &fbo_);
+    if (depth_) glDeleteTextures(1, &depth_);
+    if (dummy_) glDeleteTextures(1, &dummy_);
+}
+
+bool ShadowMap::create(int size) {
+    size_ = size;
+    depth_ = makeDepthTexture(size);
+    dummy_ = makeDepthTexture(1);
+
+    glGenFramebuffers(1, &fbo_);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_, 0);
+    glDrawBuffer(GL_NONE);   // depth only
+    glReadBuffer(GL_NONE);
+    const bool ok = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (!ok) std::fprintf(stderr, "[gfx] shadow map framebuffer is incomplete\n");
+    return ok;
+}
+
+void ShadowMap::begin() const {
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    glViewport(0, 0, size_, size_);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    // Draw both sides, and push depths back a little to stop surfaces shadowing themselves.
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.0f, 4.0f);
+}
+
+void ShadowMap::end(int screenW, int screenH) const {
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glEnable(GL_CULL_FACE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, screenW, screenH);
 }
 
 } // namespace lumen::gfx

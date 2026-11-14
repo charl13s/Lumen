@@ -1,19 +1,8 @@
-// Gfx.h - every OpenGL object in LUMEN is created here and nowhere else.
-//
-// THE RULE THAT KEEPS FIVE PEOPLE OUT OF EACH OTHER'S WAY:
-//
-//   A room file may not call OpenGL. Not glGenTextures, not glDrawArrays, not
-//   glUniform. A room describes what it wants; the core draws it.
-//
-// If five people each write a texture loader, we get five loaders, five copies
-// of the sRGB mistake, and a merge conflict every week. With one loader there is
-// one place to fix it, and when Timothy improves the lighting every room gets
-// the improvement for free.
-//
-// If you need something here that does not exist yet, open an issue. Do not add
-// a GL call to a room file.
+// Gfx.h - shaders, textures, meshes and materials. Owner: Timothy.
+// All OpenGL objects are created here. Room files never call OpenGL.
 
 #pragma once
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -22,6 +11,8 @@
 #include <glm/glm.hpp>
 
 #include "Config.h"
+
+namespace lumen::raster { class Canvas; }
 
 namespace lumen::gfx {
 
@@ -34,8 +25,7 @@ public:
     Shader(const Shader&)            = delete;
     Shader& operator=(const Shader&) = delete;
 
-    // Compiles and links. Throws std::runtime_error carrying the GLSL compiler's
-    // own message, which is almost always enough to find the problem.
+    // Compiles and links. Throws with the GLSL compiler's error message.
     static std::unique_ptr<Shader> fromFiles(const std::string& vertPath,
                                              const std::string& fragPath);
 
@@ -46,7 +36,12 @@ public:
     void set(const std::string& name, float v) const;
     void set(const std::string& name, const glm::vec2& v) const;
     void set(const std::string& name, const glm::vec3& v) const;
+    // Without this, a mat3 silently converts to mat4, the upload fails, and
+    // every normal in the scene becomes zero.
+    void set(const std::string& name, const glm::mat3& v) const;
     void set(const std::string& name, const glm::mat4& v) const;
+    // An array of matrices, such as the joints of a skinned character.
+    void set(const std::string& name, const std::vector<glm::mat4>& v) const;
 
 private:
     unsigned prog_ = 0;
@@ -56,13 +51,8 @@ private:
 
 // ---- textures --------------------------------------------------------------
 
-// Loaded once, cached by path. Ask for the same file from five rooms and you get
-// the same GPU handle, loaded once.
-//
-// GAMMA: colour textures are uploaded as sRGB so the GPU linearises them on
-// read. All lighting maths then happens in linear space, and the final frame is
-// converted back on output. Get this wrong and every light intensity in the
-// project has to be re-tuned, so it is handled here, once.
+// Each file is loaded once and cached by path.
+// Colour textures are uploaded as sRGB so lighting is done in linear space.
 class Texture {
 public:
     enum class Kind {
@@ -84,16 +74,19 @@ class TextureCache {
 public:
     ~TextureCache();
 
-    // Returns nullptr and logs if the file is missing, so a member with a typo in
-    // a filename gets a grey placeholder and a clear message, not a crash that
-    // blocks everyone else.
+    // Returns nullptr and prints a message if the file is missing.
     const Texture* get(const std::string& path, Texture::Kind kind = Texture::Kind::Colour);
 
-    // Derives a normal map from a colour image's own luminance gradient. This is
-    // how a flat painting stops reading as a sticker: the brushwork catches the
-    // lamp as you walk past, for no extra asset and about fifteen lines of code.
+    // Makes a normal map from an image's brightness, so brushstrokes catch the lamp.
     const Texture* reliefFrom(const std::string& colourPath,
                               float strength = cfg::kReliefStrength);
+
+    // An image packed inside another file, such as a .glb model. key names it in the cache.
+    const Texture* fromMemory(const std::string& key, const std::vector<unsigned char>& bytes,
+                              Texture::Kind kind = Texture::Kind::Colour);
+
+    // A picture drawn by our own 2D code. Uploaded once per key, as a colour texture.
+    const Texture* fromCanvas(const std::string& key, const raster::Canvas& image);
 
     const Texture* white();   // 1x1, for untextured surfaces
     const Texture* flatNormal();  // 1x1 pointing straight out
@@ -113,17 +106,33 @@ struct Vertex {
     glm::vec3 tangent{1.0f, 0.0f, 0.0f};   // for normal mapping
 };
 
-// A chunk of geometry on the GPU. Build it on the CPU with MeshData, then upload.
+// Geometry built on the CPU, then uploaded as a Mesh.
 struct MeshData {
     std::vector<Vertex>        vertices;
     std::vector<unsigned>      indices;
 
     void addTriangle(const Vertex& a, const Vertex& b, const Vertex& c);
-    // Quad in winding order a->b->c->d. Computes the normal and tangent for you.
+    // Quad a, b, c, d in winding order. Normal and tangent are worked out for you.
     void addQuad(const glm::vec3& a, const glm::vec3& b,
                  const glm::vec3& c, const glm::vec3& d,
                  float uScale = 1.0f, float vScale = 1.0f);
     void append(const MeshData& other, const glm::mat4& transform);
+    std::size_t triangleCount() const { return indices.size() / 3; }
+};
+
+// A vertex that follows up to four bones, for animated characters.
+struct SkinnedVertex {
+    glm::vec3     position{0.0f};
+    glm::vec3     normal{0.0f, 1.0f, 0.0f};
+    glm::vec2     uv{0.0f};
+    glm::vec3     tangent{1.0f, 0.0f, 0.0f};
+    std::uint16_t joints[4] = {0, 0, 0, 0};
+    glm::vec4     weights{1.0f, 0.0f, 0.0f, 0.0f};   // add up to 1
+};
+
+struct SkinnedMeshData {
+    std::vector<SkinnedVertex> vertices;
+    std::vector<unsigned>      indices;
     std::size_t triangleCount() const { return indices.size() / 3; }
 };
 
@@ -135,6 +144,7 @@ public:
     Mesh& operator=(const Mesh&) = delete;
 
     static std::unique_ptr<Mesh> upload(const MeshData& data);
+    static std::unique_ptr<Mesh> upload(const SkinnedMeshData& data);
     void draw() const;
     std::size_t triangleCount() const { return tris_; }
 
@@ -144,9 +154,32 @@ private:
     std::size_t tris_ = 0;
 };
 
+// ---- shadow map ------------------------------------------------------------
+
+// A depth texture rendered from the lamp. begin() switches drawing into it,
+// end() switches back to the window.
+class ShadowMap {
+public:
+    ShadowMap() = default;
+    ~ShadowMap();
+    ShadowMap(const ShadowMap&)            = delete;
+    ShadowMap& operator=(const ShadowMap&) = delete;
+
+    bool create(int size);
+    void begin() const;
+    void end(int screenW, int screenH) const;
+
+    unsigned texture() const { return depth_; }
+    unsigned placeholder() const { return dummy_; }   // bound while drawing the map itself
+
+private:
+    unsigned fbo_ = 0, depth_ = 0, dummy_ = 0;
+    int size_ = 0;
+};
+
 // ---- materials -------------------------------------------------------------
 
-// What a surface is made of. A room fills this in; the core binds it.
+// What a surface looks like. Rooms fill this in.
 struct Material {
     const Texture* albedo = nullptr;
     const Texture* normal = nullptr;
@@ -154,6 +187,7 @@ struct Material {
     float          specular  = 0.15f;  // 0 = chalk, 1 = polished
     float          shininess = 32.0f;
     float          emissive  = 0.0f;   // >0 makes it glow on its own
+    float          triplanarScale = 1.0f;  // texture repeats per metre, Triplanar only
     cfg::Shading   shading   = cfg::Shading::BlinnPhong;
 };
 
