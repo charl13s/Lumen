@@ -1,32 +1,17 @@
-// Room.h - THE FROZEN INTERFACE.
+// Room.h - what every gallery builds on.
 //
-// ============================================================================
-// This file is the contract between the five of us. Once it is agreed it does
-// not change without the whole team agreeing, because every room is written
-// against it. If you need something it does not give you, open an issue; do not
-// edit this file on your own branch.
-// ============================================================================
+// Each gallery is one file in src/rooms/, owned by one member, who decides
+// what goes in it. A room can:
+//   hang paintings, with any images in assets/ (build::buildFramedWork)
+//   build any shape, from the build:: helpers or its own triangles
+//   load 3D models (ctx.model) and show art drawn by our own code (ctx.canvas)
+//   choose each surface's material and shading mode
+//   move things every frame (update() and transforms())
+//   react when the visitor walks in or out (onEnter, onExit)
+//   keep its own constants at the top of its own file
 //
-// WHAT A ROOM MAY DO
-//   - describe geometry it wants built (walls furniture, sculpture, plinths)
-//   - hang works at the hang points the plan gives it
-//   - choose a shading mode per surface, from cfg::Shading
-//   - run its own animation in update()
-//   - react to the visitor arriving and leaving
-//
-// WHAT A ROOM MAY NOT DO
-//   - call OpenGL. Not one function. The core draws; you describe.
-//   - touch another room's files
-//   - edit anything in src/core/
-//   - load a texture directly: ask ctx.textures, so it is cached and gamma is right
-//   - invent its own constants: put them in core/Config.h
-//
-// WHY SO STRICT
-//   Five people editing shared rendering code produces a merge conflict a week
-//   and five copies of every bug. With this split, your room is one file nobody
-//   else opens, so your git history is clean, your contribution is unambiguous
-//   (see the brief, section 4.1), and a room that is half finished in week 11
-//   does not stop anybody else's room from working.
+// Rooms do not call OpenGL themselves; the program draws what build() returns.
+// Change this interface or anything else in src/core/ only with the group.
 
 #pragma once
 #include <memory>
@@ -39,65 +24,69 @@
 #include "Config.h"
 #include "Gfx.h"
 #include "Plan.h"
+#include "Raster.h"
 
 namespace lumen {
 
-// Everything a room is allowed to reach. Passed in; never a global.
-struct RoomContext {
-    const Plan*        plan     = nullptr;
-    const RoomPlan*    me       = nullptr;   // your own room's plan entry
-    gfx::TextureCache* textures = nullptr;
-    const std::string* assetDir = nullptr;   // prefix for asset paths
-
-    // Convenience: load a colour texture from assets/, cached.
-    const gfx::Texture* texture(const std::string& relativePath) const;
-    // Convenience: the derived relief map for the same image.
-    const gfx::Texture* relief(const std::string& relativePath) const;
-};
-
-// One thing to draw. A room returns a list of these from build().
+// One thing to draw. build() returns a list of these.
 struct Piece {
     gfx::MeshData  mesh;
     gfx::Material  material;
     glm::mat4      transform{1.0f};
-    std::string    note;   // shows in the debug overlay; say WHY you chose the shading
+    std::string    note;   // shown in the debug overlay
 };
 
-// The interface every room implements. Five methods, four of them optional.
+// Everything a room can use.
+struct RoomContext {
+    const Plan*        plan     = nullptr;
+    const RoomPlan*    me       = nullptr;   // this room's entry in the plan
+    gfx::TextureCache* textures = nullptr;
+    const std::string* assetDir = nullptr;   // prefix for asset paths
+
+    // Loads a colour texture from assets/, cached.
+    const gfx::Texture* texture(const std::string& relativePath) const;
+    // The normal map made from the same image.
+    const gfx::Texture* relief(const std::string& relativePath) const;
+
+    // A texture drawn by our own 2D code, such as generated art. The same key
+    // gives back the same texture, so draw each one once, in build().
+    const gfx::Texture* canvas(const std::string& key, const raster::Canvas& image) const;
+
+    // A 3D model (.gltf or .glb) from assets/, made `height` metres tall and
+    // stood at a plan position, facing a compass heading (0 north, 90 east),
+    // lifted by `elevation` (to stand it on a plinth). finish is "scan" for the
+    // model's own textures, or "marble" or "bronze". One Piece per material;
+    // empty, with a message, if the file cannot be read.
+    std::vector<Piece> model(const std::string& relativePath, Vec2 at, float headingDeg,
+                             float height, float elevation = 0.0f,
+                             const std::string& finish = "scan") const;
+};
+
 class Room {
 public:
     virtual ~Room() = default;
 
-    // Called once at startup. Return everything your room contains.
-    // This is the only method you must implement.
+    // Called once at startup. Return everything in the room. Required.
     virtual std::vector<Piece> build(const RoomContext& ctx) = 0;
 
-    // Called every frame, whether or not the visitor is inside. Keep it cheap.
-    // dt is seconds. Return true if any piece's transform changed this frame.
+    // Called every frame. dt is in seconds. Return true if anything moved.
     virtual bool update(float /*dt*/) { return false; }
 
-    // Transforms for pieces that move. Indexed as build() returned them.
+    // Transforms for moving pieces, in the order build() returned them.
     // Only called when update() returned true.
     virtual void transforms(std::vector<glm::mat4>& /*out*/) {}
 
-    // The visitor crossed your threshold / left it. The vault fade is handled
-    // for you by LightingState; use these only for things specific to your room.
+    // The visitor entered or left. The room light fade is already handled.
     virtual void onEnter() {}
     virtual void onExit()  {}
 
-    // For the debug overlay and the final report: which techniques does your room
-    // demonstrate, and why did you choose them? The brief asks each of us to
-    // justify our techniques, so write this as you go rather than in week 13.
+    // Which techniques this room uses, printed with F1.
     virtual std::string techniqueNotes() const { return {}; }
 };
 
 using RoomPtr = std::unique_ptr<Room>;
 
-// ---- registry --------------------------------------------------------------
-//
-// Adding a room is ONE line in Registry.cpp. Nothing else in the codebase needs
-// to know your room exists.
-
+// Rooms are registered in Registry.cpp.
 RoomPtr makeRoom(const std::string& roomId);
 
 } // namespace lumen
