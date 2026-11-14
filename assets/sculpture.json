@@ -1,0 +1,98 @@
+{
+  "_comment": [
+    "The statues and reliefs in the corridor and atrium. Read by src/core/Sculpture.cpp.",
+    "place: \"atrium\" stands it under the oculus; \"niche 0\" to \"niche 3\" are the corridor niches in plan.json.",
+    "height is the statue alone, in metres. plinth is width, height and depth.",
+    "turn spins a scan that does not face the visitor; forward moves it out of the niche, in metres.",
+    "finish: scan, marble or bronze.",
+    "wall is the outer face of the atrium a relief hangs on; at is plan x for N and S, plan y for E and W.",
+    "Every credit here is shown on the credits screen (F3). See assets/CREDITS.md."
+  ],
+
+  "statues": [
+    {
+      "title": "Apollo Belvedere",
+      "model": "models/apollo_belvedere/scene.gltf",
+      "place": "atrium",
+      "height": 2.24,
+      "turn": 0,
+      "plinth": [1.6, 0.8, 1.6],
+      "finish": "marble",
+      "credit": "Apollo Belvedere by Rigsters, CC BY 4.0, sketchfab.com/rigsters"
+    },
+    {
+      "title": "Demeter of Knidos",
+      "model": "models/demeter_of_knidos/scene.gltf",
+      "place": "niche 0",
+      "height": 1.47,
+      "turn": 0,
+      "plinth": [1.0, 0.55, 0.9],
+      "finish": "scan",
+      "credit": "Demeter of Knidos by Bonn Center for Digital Humanities, CC BY 4.0, sketchfab.com/bcdh"
+    },
+    {
+      "title": "Maya and Merit",
+      "model": "models/maya_and_merit/scene.gltf",
+      "place": "niche 1",
+      "height": 1.58,
+      "turn": -90,
+      "forward": 0.12,
+      "plinth": [1.2, 0.4, 1.3],
+      "finish": "scan",
+      "credit": "Maya and Merit, National Museum of Antiquities, Leiden, CC0"
+    },
+    {
+      "title": "Zeus or Poseidon of Artemision",
+      "model": "models/zeus_or_poseidon_from_the_artemision/scene.gltf",
+      "place": "niche 2",
+      "height": 1.9,
+      "turn": 0,
+      "plinth": [1.2, 0.5, 0.8],
+      "finish": "bronze",
+      "credit": "Zeus or Poseidon from the Artemision, SMK National Gallery of Denmark, CC0"
+    },
+    {
+      "title": "Discobolus",
+      "model": "models/discobolus_the_discus_thrower/scene.gltf",
+      "place": "niche 3",
+      "height": 1.55,
+      "turn": 0,
+      "plinth": [1.1, 0.55, 0.7],
+      "finish": "marble",
+      "credit": "Discobolus, SMK National Gallery of Denmark, CC0"
+    }
+  ],
+
+  "reliefs": [
+    {
+      "title": "Relief panel, Assyrian, ca. 883 to 859 BCE",
+      "image": "reliefs/assyrian-panel-a.jpg",
+      "wall": "N", "at": 18.0, "width": 1.9, "centre_height": 2.1,
+      "credit": "The Metropolitan Museum of Art, Gift of John D. Rockefeller Jr., 1932, CC0"
+    },
+    {
+      "title": "Relief panel, Assyrian, ca. 883 to 859 BCE",
+      "image": "reliefs/assyrian-panel-b.jpg",
+      "wall": "N", "at": 26.0, "width": 1.9, "centre_height": 2.1,
+      "credit": "The Metropolitan Museum of Art, Gift of John D. Rockefeller Jr., 1932, CC0"
+    },
+    {
+      "title": "Marble sarcophagus with garlands, Roman, ca. 200 to 225 CE",
+      "image": "reliefs/sarcophagus-garlands.jpg",
+      "wall": "S", "at": 22.0, "width": 2.6, "centre_height": 1.5,
+      "credit": "The Metropolitan Museum of Art, Gift of Abdo Debbas, 1870, CC0"
+    },
+    {
+      "title": "Marble grave stele of a woman, Greek, 425 to 400 BCE",
+      "image": "reliefs/stele-woman.jpg",
+      "wall": "E", "at": 15.0, "width": 1.1, "centre_height": 1.9,
+      "credit": "The Metropolitan Museum of Art, Rogers Fund, 1908, CC0"
+    },
+    {
+      "title": "Marble relief with Hermes, Roman, 27 BCE to 68 CE",
+      "image": "reliefs/relief-hermes.jpg",
+      "wall": "E", "at": 21.0, "width": 1.1, "centre_height": 1.9,
+      "credit": "The Metropolitan Museum of Art, Harris Brisbane Dick Fund, 1991, CC0"
+    }
+  ]
+}

@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
 """
-Generates placeholder assets so a fresh clone renders something on first run.
-
-These are all procedural - no downloaded images, nothing with a licence question.
-Replace the works/ images with real public-domain scans from the Art Institute of
-Chicago or Rijksmuseum open-access collections when you are ready; see
-docs/ARTWORK.md.
-
-The placeholder "paintings" are Vera Molnar style perturbed grids: a regular grid
-whose vertices drift further out of alignment as you move across the canvas. That
-is deliberate - it is the same family of algorithmic art Gallery Three exhibits,
-so even the placeholders are on-theme.
+Makes placeholder textures and paintings, all generated, so there are no licence
+issues. The paintings are Vera Molnar style grids. Replace them with real public
+domain images later.
 
     python tools/make-placeholder-assets.py
 """
@@ -26,7 +18,7 @@ ASSETS = os.path.join(HERE, "..", "assets")
 
 
 def noise_tile(size, base, spread, blur=1.4, seed=0):
-    """A flat colour with fine grain - enough to catch a raking light."""
+    """A flat colour with fine grain."""
     rnd = random.Random(seed)
     img = Image.new("RGB", (size, size))
     px = img.load()
@@ -54,7 +46,7 @@ def plaster(size=512):
 
 
 def stone(size=512):
-    """Floor: large slabs with a visible joint, so movement reads as movement."""
+    """Floor: large slabs with visible joints."""
     img = noise_tile(size, (126, 120, 110), 9.0, 1.2, seed=2)
     d = ImageDraw.Draw(img)
     for i in range(0, size + 1, size // 2):
@@ -64,7 +56,7 @@ def stone(size=512):
 
 
 def concrete(size=512):
-    """Kahn's vaults are board-formed concrete: fine horizontal banding."""
+    """Concrete with fine horizontal bands, like Kahn's vaults."""
     img = noise_tile(size, (178, 174, 166), 6.0, 1.5, seed=3)
     d = ImageDraw.Draw(img)
     for y in range(0, size, 46):
@@ -102,7 +94,7 @@ def gilt(size=512):
 
 
 def label(w=512, h=256):
-    """Wall label plate. Real text comes later; this is the paper it prints on."""
+    """Blank wall label."""
     img = Image.new("RGBA", (w, h), (238, 234, 223, 255))
     d = ImageDraw.Draw(img)
     d.rectangle([0, 0, w - 1, h - 1], outline=(206, 200, 186), width=3)
@@ -114,12 +106,7 @@ def label(w=512, h=256):
 
 
 def molnar(index, size=768):
-    """
-    A Vera Molnar style perturbed grid: start from a regular grid of squares and
-    let each vertex drift by an amount that grows across the canvas. Order on one
-    side, disorder on the other. About twenty lines, and it is real algorithmic
-    art rather than a grey rectangle.
-    """
+    """A Vera Molnar style grid: squares drift more and more across the canvas."""
     rnd = random.Random(1000 + index)
     palettes = [
         ((22, 20, 17), (233, 216, 170)),
@@ -140,7 +127,7 @@ def molnar(index, size=768):
 
     for row in range(cells):
         for col in range(cells):
-            # Disorder grows left to right, which is Molnar's whole move.
+            # More drift from left to right.
             k = (col / (cells - 1)) ** 1.7 * step * 0.42
             x0 = margin + col * step
             y0 = margin + row * step
