@@ -1,0 +1,11 @@
+Model Information:
+* title:	Demeter of Knidos
+* source:	https://sketchfab.com/3d-models/demeter-of-knidos-7a2865a833c64de18083d5eaa2426065
+* author:	Bonn Center for Digital Humanities (https://sketchfab.com/bcdh)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Demeter of Knidos" (https://sketchfab.com/3d-models/demeter-of-knidos-7a2865a833c64de18083d5eaa2426065) by Bonn Center for Digital Humanities (https://sketchfab.com/bcdh) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

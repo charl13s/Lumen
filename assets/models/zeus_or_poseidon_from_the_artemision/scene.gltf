@@ -1,0 +1,290 @@
+{
+  "accessors": [
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 65532,
+      "max": [
+        2136.726806640625,
+        503.6390686035156,
+        2013.699462890625
+      ],
+      "min": [
+        0.2117919921875,
+        0.0,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 786384,
+      "componentType": 5126,
+      "count": 65532,
+      "max": [
+        0.9997190833091736,
+        0.9999945759773254,
+        0.9999745488166809
+      ],
+      "min": [
+        -0.9999957084655762,
+        -0.9999995827674866,
+        -0.9999982714653015
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 322356,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1572768,
+      "componentType": 5126,
+      "count": 65533,
+      "max": [
+        2151.72509765625,
+        502.599853515625,
+        2013.699462890625
+      ],
+      "min": [
+        0.0,
+        2.060821533203125,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2359164,
+      "componentType": 5126,
+      "count": 65533,
+      "max": [
+        0.9999622106552124,
+        0.9999945759773254,
+        0.9999707341194153
+      ],
+      "min": [
+        -0.999962568283081,
+        -0.9999837279319763,
+        -0.9999851584434509
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 1289424,
+      "componentType": 5125,
+      "count": 299403,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3145560,
+      "componentType": 5126,
+      "count": 4715,
+      "max": [
+        2149.99560546875,
+        503.41094970703125,
+        2013.022216796875
+      ],
+      "min": [
+        1.21527099609375,
+        27.457931518554688,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3202140,
+      "componentType": 5126,
+      "count": 4715,
+      "max": [
+        0.9982005953788757,
+        0.999943196773529,
+        0.9999626874923706
+      ],
+      "min": [
+        -0.998830258846283,
+        -0.9999870657920837,
+        -0.9999606013298035
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 2487036,
+      "componentType": 5125,
+      "count": 6708,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "SMK – National Gallery of Denmark (https://sketchfab.com/smkmuseum)",
+      "license": "CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)",
+      "source": "https://sketchfab.com/3d-models/zeus-or-poseidon-from-the-artemision-d4876aa609304682945145debedfc77e",
+      "title": "Zeus or Poseidon from the Artemision"
+    },
+    "generator": "Sketchfab-12.68.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2513868,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3258720,
+      "byteOffset": 2513868,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 5772588,
+      "uri": "scene.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "default",
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.6
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Object_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0
+          },
+          "indices": 2,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Object_1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 4,
+            "POSITION": 3
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Object_2",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 7,
+            "POSITION": 6
+          },
+          "indices": 8,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.0010000000474974513,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446154715841e-19,
+        -0.0010000000474974513,
+        0.0,
+        0.0,
+        0.0010000000474974513,
+        2.220446154715841e-19,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        -1003.3129272460938,
+        -282.8285217285156,
+        -0.29681509733200073,
+        1.0
+      ],
+      "name": "Zeus_or_Poseidon_from_the_Artemision_SMK_KAS2100_10pct.obj.cleaner.gles"
+    },
+    {
+      "children": [
+        3,
+        4,
+        5
+      ],
+      "name": "Object_2"
+    },
+    {
+      "mesh": 0,
+      "name": "Object_3"
+    },
+    {
+      "mesh": 1,
+      "name": "Object_4"
+    },
+    {
+      "mesh": 2,
+      "name": "Object_5"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

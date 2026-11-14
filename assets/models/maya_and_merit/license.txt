@@ -1,0 +1,8 @@
+Model Information:
+* title:	Beeld van Maya en Merit
+* source:	https://sketchfab.com/3d-models/beeld-van-maya-en-merit-f2d7a014141841d99f16ccb4cc404326
+* author:	The National Museum of Antiquities (https://sketchfab.com/rmo_leiden)
+
+Model License:
+* license type:	CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)
+* requirements:	Credit is not mandatory. Commercial use is allowed.
