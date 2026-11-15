@@ -4,83 +4,102 @@ A walkable virtual art gallery, built for ICS 3204 Computer Graphics at Strathmo
 
 ## Description
 
-LUMEN will be a gallery you walk through in first person. The building is dark, the visitor carries a lamp, and each room lights up when they walk in. The plan is a loop corridor around a central atrium, with five galleries off it, one built by each member.
+LUMEN is a gallery you walk through in first person. The building is dark: a loop corridor around a central atrium, with five galleries off it, one built by each member. At the start a marble statue of a torch bearer comes to life, steps down from its plinth and hands you its torch. You carry that light through the gallery, and each room lights up when you walk in.
 
-
+The 3D view is drawn with OpenGL. The minimap, the status strip and the algorithm pages are drawn by our own C++ code from Checkpoints 1 and 2, pixel by pixel, and shown on screen as textures.
 
 ## Group members and responsibilities
 
 | Member | Responsible for | Work so far |
 |---|---|---|
-| Shawn Kuria | Integration, repository, main program | `main.cpp`, build setup, README; the GIF writer and the list of animations (`Gif.cpp`, `Animations.cpp`) |
-| Charles Murage | Camera, movement, collision | Bezier and Catmull-Rom curves, the minimap, the floor plan page, the tour route (`Curves.cpp`, `MapPages.cpp`); animation helpers and the tour animation (`Anim.cpp`) |
-| Timothy Kimani | Lighting, shading, artwork | The gallery components (`Components.cpp`); Gallery Three's generated artwork, now moving (`ArtPage.cpp`); the lamp animation (`LampAnim.cpp`) |
-| Erykah Diang'a | Geometry, floor plan | Floor plan generator, plan loading and the JSON reader (`Plan.cpp`, `Json.cpp`); 3D transformations and Gallery Two in 3D (`Transform3D.cpp`, `Room3D.cpp`) |
-| Priscillah Njoroge | Rasterisation algorithms, tests | Lines, circles, ellipses, fills, clipping, polygons, the algorithm pages and the tests (`Raster.cpp`, `Polygon.cpp`, `Demo.cpp`); 2D transformations (`Transform.cpp`, `TransformPage.cpp`) |
+| Shawn Kuria | Integration, repository, main program | Build setup with vcpkg, the gallery's main loop (`main.cpp`), the list of rooms, Gallery Three; earlier the GIF writer and the pages program |
+| Charles Murage | Camera, movement, collision | Camera, collision, the guided tour, the minimap, the torch bearer and the intro (`Camera.cpp`, `Collision.cpp`, `Tour.cpp`, `Minimap.cpp`, `Character.cpp`, `Intro.cpp`), Gallery Two; earlier the curves and animation helpers |
+| Timothy Kimani | Lighting, shading, artwork | The shaders, textures and shadow map, the lamp and room lights, the statues and reliefs (`Gfx.cpp`, `Lighting.cpp`, `Sculpture.cpp`, `shaders/`), Gallery One; earlier the generated artwork |
+| Erykah Diang'a | Geometry, floor plan | The building from the plan, the glTF model reader and the skeleton (`Builders.cpp`, `Model.cpp`, `Skeleton.cpp`, `Plan.cpp`), Gallery Four; earlier the 3D transformations |
+| Priscillah Njoroge | Rasterisation algorithms, tests | Our 2D drawing shown in OpenGL (`CanvasView.cpp`), the tests and the algorithm notes, the floor plan with open niches, Gallery Five; earlier the algorithms and 2D transformations |
 
 ## Technologies and tools
 
-- C++17, standard library only
-- CMake
-- Visual Studio 2022 or newer (MSVC), or g++
+- C++17
+- CMake and vcpkg
+- Visual Studio 2022 or newer (MSVC), Windows
+- OpenGL 3.3, GLFW, glad, glm
+- nlohmann/json, stb_image
 - Python 3, for generating the floor plan
 
-
+The libraries open the window, talk to the graphics card and read image files. The algorithms below are our own.
 
 ## Graphics techniques and algorithms implemented so far
 
-All in `src/core/`.
-
 | Topic | Implemented | Used for in the project |
 |---|---|---|
-| Lines | DDA, Bresenham (all eight octants), thick lines, polylines | Walls on the floor plan and minimap, the painting's grid, light rays, wireframes |
-| Polygons | Polygons as ordered vertex lists; area (shoelace), centroid, point in polygon (even-odd), convex test | Room shapes, frame pieces |
-| Clipping | Cohen-Sutherland line clipping, Sutherland-Hodgman polygon clipping | Walls, route and wireframes clipped to the view; room shapes and the lamp's light clipped to the minimap |
-| Filling | Scanline polygon fill, boundary fill | Rooms, frame, plinth; the room the visitor is standing in |
-| Circles and ellipses | Midpoint circle, midpoint ellipse | Visitor marker, doors, lamp, atrium oculus, the lamp's light on the floor |
-| Curves | Quadratic and cubic Bezier, de Casteljau, Catmull-Rom spline, arc length | Vault arch, frame cross section, guided tour route |
-| 2D transformations | 3x3 matrices: translate, rotate, scale, reflect, shear; about any point or line; composite matrices; inverse | The lamp's light and heading on the minimap, Schotter's rotated squares, the moving mosaic |
-| 3D transformations | 4x4 matrices: translate, scale, rotate about x, y and z; camera (look at); perspective projection | Gallery Two as a turning wireframe, vaults included |
-| Animation | Interpolation, easing, keyframes, looping; motion by arc length; animated GIF output (LZW, median cut colours) | The guided tour, the lamp sweeping a sculpture, the room light fading, the moving artwork |
+| Lines | DDA, Bresenham (all eight octants), thick lines, polylines | Minimap walls and tour route, wireframes |
+| Polygons | Area (shoelace), centroid, point in polygon, convex test | Room shapes, frame pieces |
+| Clipping | Cohen-Sutherland, Sutherland-Hodgman | Minimap walls and route; room shapes and the lamp's light on the minimap |
+| Filling | Scanline polygon fill, boundary fill | Rooms on the minimap |
+| Circles and ellipses | Midpoint circle, midpoint ellipse | Visitor marker, doors, the oculus, the lamp's light |
+| Curves | Quadratic and cubic Bezier, de Casteljau, Catmull-Rom, arc length | Vault ceilings, picture frame moulding, the guided tour |
+| 2D transformations | 3x3 matrices, about any point or line, composite, inverse | The lamp's light turned to your heading on the minimap |
+| 3D transformations | Model, view (look at) and perspective projection matrices | Every vertex in the gallery |
+| Animation | Interpolation, easing, keyframes, arc length motion; skeletal animation with slerp, crossfades and skinning | The tour, the room lights fading, the torch bearer |
+| Shading | Lambert, Blinn-Phong, Gouraud, normal mapping, emissive, triplanar | Walls, paintings, reliefs, statues |
+| Lighting | Spotlight with falloff, hemisphere room light, tone mapping, sRGB | The carried lamp, the room lights, the oculus |
+| Shadows | Shadow mapping from the lamp, with soft edges (PCF) | Everything the lamp lights |
+| Textures | sRGB, mipmaps, anisotropic filtering, normal maps made with a Sobel filter | Paintings, reliefs, statues |
+
+More detail is in `docs/ALGORITHMS.md`.
 
 ## How to compile and run
 
-You need CMake and a C++17 compiler (Visual Studio 2022 or newer with **Desktop development with C++**, or g++). Nothing else.
+You need Visual Studio 2022 or newer with **Desktop development with C++**, and Git.
 
-From the project folder:
+1. Install vcpkg, once per machine:
 
-```bat
-cmake -B build -S .
-cmake --build build --config Debug
-build\Debug\lumen_cp2.exe
-build\Debug\lumen_tests.exe
-```
+   ```bat
+   git clone --depth 1 https://github.com/microsoft/vcpkg C:\dev\vcpkg
+   C:\dev\vcpkg\bootstrap-vcpkg.bat
+   ```
 
-`lumen_cp2` saves into `output/`:
-- twelve pages as images (`page-1.bmp` to `page-12.bmp`)
-- five animations (`anim-*.gif`); open them in a web browser to watch them
-- six frames from each animation side by side (`anim-*-frames.bmp`), for documents
+2. Build, from the project folder:
 
-The animations take about a minute and a half in a Debug build. `lumen_cp2 --pages-only` skips them. `lumen_tests` runs the unit tests.
+   ```bat
+   cmake --preset default
+   cmake --build --preset debug
+   ```
 
-Without CMake, with g++:
+   The first build downloads the libraries and takes 10 to 20 minutes.
+   If you built Checkpoint 2 before, delete the `build` folder first.
 
-```bat
-g++ -std=c++17 -O2 -Isrc src/main.cpp src/core/*.cpp -o lumen_cp2.exe
-```
+3. Run, from the project folder:
+
+   ```bat
+   build\Debug\lumen.exe
+   build\Debug\lumen_pages.exe
+   build\Debug\lumen_tests.exe
+   ```
+
+   `lumen` is the gallery. `lumen_pages` saves the Checkpoint 1 and 2 pages and animations into `output/`. `lumen_tests` runs the unit tests.
+
+**Controls:** WASD to walk, mouse to look, Shift to run, E to take the lamp, T for the guided tour, L to change the lighting, K to turn shadows on and off, F2 for the algorithm pages (arrows to turn them), F3 for the credits, Esc to free the mouse.
+
+`lumen --no-intro` starts with the lamp already in hand. `lumen --shot out.bmp 28 29 0` saves a view from plan position (28, 29) facing north.
+
+If `Could not find a package configuration file` appears, vcpkg is not at `C:\dev\vcpkg`: install it there, or change the path in `CMakePresets.json`. Run the programs from the project folder, not from `build\Debug`.
 
 ## Current progress
 
-- All the Checkpoint 1 algorithms are written and drawn on their own pages: lines, circles and ellipses, filling, line clipping, polygons and polygon clipping, curves.
-- 2D transformations with 3x3 matrices and 3D transformations with 4x4 matrices, each on its own page.
-- Five animations: the transformations step by step, Gallery Two turning in 3D, the guided tour with the minimap following the visitor, the lamp sweeping a sculpture while the room light fades, and Gallery Three's artwork moving.
-- The floor plan is generated by `tools/generate-floor-plan.py` and loaded from `assets/plan.json` with our own JSON reader.
-- 167 unit tests pass, on both MSVC and g++.
+- The building is generated from the floor plan: walls with lintels, vault ceilings, the corridor ceiling, and the atrium with its open oculus.
+- You can walk it with collision, or take the guided tour along a Catmull-Rom spline.
+- The intro: a marble torch bearer comes to life, hands you the lamp, and turns back to stone.
+- The lamp lights the gallery and casts shadows; each room lights up when you enter.
+- Five museum statues stand in the atrium and the corridor niches, and five carved reliefs hang on the atrium walls.
+- The minimap and the twelve algorithm pages are drawn by our own code and shown in the gallery.
+- Gallery Two is complete with framed paintings.
+- 309 unit tests pass.
 
 ## Known limitations
 
-- The output is images and animated GIFs. There is no window or interaction yet.
-- The 3D room is a wireframe: lines only, with no hidden lines removed.
-- The paintings are generated placeholders, not real artwork.
-- GIFs hold at most 256 colours per frame, so smooth shading is reduced.
-- Only tested on Windows.
+- Galleries One, Three, Four and Five are still empty.
+- Gallery Two's paintings are placeholders we generated, not real artwork.
+- The gallery opens in the bright Exhibition lighting. The intended darker look is one press of L away.
+- Only tested on Windows with Visual Studio.
