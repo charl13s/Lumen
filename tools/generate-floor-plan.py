@@ -49,12 +49,12 @@ ATRIUM   = (14.0, 12.0, 30.0, 24.0)
 VEST     = (4.0, 16.0, 11.0, 22.0)
 
 ROOMS = [
-    dict(id="R1", name="Gallery One",   owner="Shawn Kuria",      rect=(11.0, 27.0, 21.0, 36.0),
+    dict(id="R1", name="Gallery One",   owner="Timothy Kimani",   rect=(11.0, 27.0, 21.0, 36.0),
          door=("S", 15.0, 18.0), vault_axis="y", vaults=2),
     dict(id="R2", name="Gallery Two",   owner="Charles Murage",   rect=(23.0, 27.0, 33.0, 36.0),
          door=("S", 26.0, 29.0), vault_axis="y", vaults=2),
-    dict(id="R3", name="Gallery Three", owner="Timothy Kimani",   rect=(33.0, 11.0, 45.0, 25.0),
-         door=("W", 16.0, 20.0), vault_axis="y", vaults=2, tag="generated artwork"),
+    dict(id="R3", name="Gallery Three", owner="Shawn Kuria",      rect=(33.0, 11.0, 45.0, 25.0),
+         door=("W", 16.0, 20.0), vault_axis="y", vaults=2),
     dict(id="R4", name="Gallery Four",  owner="Erykah Diang'a",   rect=(23.0, 0.0, 33.0, 9.0),
          door=("N", 26.0, 29.0), vault_axis="y", vaults=2),
     dict(id="R5", name="Gallery Five",  owner="Priscillah Njoroge", rect=(11.0, 0.0, 21.0, 9.0),
@@ -92,6 +92,26 @@ def door_seg(rect, door):
     if side == "S": return ((a, y0), (b, y0))
     if side == "W": return ((x0, a), (x0, b))
     return ((x1, a), (x1, b))
+
+
+def niche_opening(n):
+    """The gap in the corridor's outer wall in front of a niche, with a short
+    return of wall on each side."""
+    nx0, ny0, nx1, ny1 = n
+    if ny0 >= 27.0:  return ((nx0 + .3, ny0), (nx1 - .3, ny0))
+    if ny1 <= 9.0:   return ((nx0 + .3, ny1), (nx1 - .3, ny1))
+    if nx1 <= 11.0:  return ((nx1, ny0 + .3), (nx1, ny1 - .3))
+    return ((nx0, ny0 + .3), (nx0, ny1 - .3))
+
+
+def niche_walls(n):
+    """The back and sides of a niche: its rect minus the side open to the corridor."""
+    (ox, oy), _ = niche_opening(n)
+    return [s for s in rect_walls(n)
+            if not (abs(s[0][1] - s[1][1]) < 1e-6 and abs(s[0][1] - oy) < 1e-6
+                    and abs(ox - n[0]) > 1e-6 and abs(ox - n[2]) > 1e-6)
+            and not (abs(s[0][0] - s[1][0]) < 1e-6 and abs(s[0][0] - ox) < 1e-6
+                     and abs(oy - n[1]) > 1e-6 and abs(oy - n[3]) > 1e-6)]
 
 
 def hang_marks(room):
@@ -225,11 +245,8 @@ for rect, door in cuts:
     line(p0, p1, FLOOR_C, WT - 3)
 
 # niche openings onto the corridor
-for (nx0, ny0, nx1, ny1) in NICHES:
-    if ny0 >= 27.0:   seg = ((nx0 + .3, ny0), (nx1 - .3, ny0))
-    elif ny1 <= 9.0:  seg = ((nx0 + .3, ny1), (nx1 - .3, ny1))
-    elif nx1 <= 11.0: seg = ((nx1, ny0 + .3), (nx1, ny1 - .3))
-    else:             seg = ((nx0, ny0 + .3), (nx0, ny1 - .3))
+for n in NICHES:
+    seg = niche_opening(n)
     line(seg[0], seg[1], BG, WT + 2)
     line(seg[0], seg[1], FLOOR_C, WT - 3)
 
@@ -313,8 +330,8 @@ body = [
      "four recessed niches, lit only as you pass."),
     ("The rooms light themselves.", "Crossing a threshold fades up that room's vault "
      "slot over two seconds, washing the ceiling. Step back out and it fades down."),
-    ("Gallery Three is the far room.", "Largest, furthest from the entrance, and the "
-     "one that carries the generated artwork."),
+    ("Gallery Three is the far room.", "The largest, and the furthest from the "
+     "entrance."),
 ]
 yy = 252
 for head, para in body:
@@ -385,6 +402,7 @@ def seg_list():
     openings = [door_seg(r["rect"], r["door"]) for r in ROOMS]
     openings.append(door_seg(ATRIUM, ATRIUM_DOOR))
     openings.append(door_seg(VEST, VEST_DOOR))
+    openings.extend(niche_opening(n) for n in NICHES)
 
     def subtract(seg):
         (ax, ay), (bx, by) = seg
@@ -412,6 +430,8 @@ def seg_list():
     for rect in [RING_OUT, ATRIUM, VEST] + [r["rect"] for r in ROOMS]:
         for s in rect_walls(rect):
             out.extend(subtract(s))
+    for n in NICHES:
+        out.extend(niche_walls(n))
     return out
 
 
@@ -422,7 +442,7 @@ plan = dict(
     atrium=dict(rect=ATRIUM, door=ATRIUM_DOOR, oculus=dict(centre=[22.0, 18.0], radius=3.0)),
     vestibule=dict(rect=VEST, door=VEST_DOOR),
     corridor=dict(outer=RING_OUT, inner=ATRIUM, width=3.0, lit=False),
-    niches=[dict(rect=n) for n in NICHES],
+    niches=[dict(rect=n, opening=[list(p) for p in niche_opening(n)]) for n in NICHES],
     rooms=[dict(id=r["id"], name=r["name"], owner=r["owner"], rect=list(r["rect"]),
                 door=dict(side=r["door"][0], a=r["door"][1], b=r["door"][2]),
                 vaults=[[list(p0), list(p1)] for p0, p1 in vault_lines(r)],

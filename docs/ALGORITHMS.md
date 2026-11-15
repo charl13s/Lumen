@@ -1,6 +1,6 @@
 # Algorithms
 
-Every algorithm is our own C++ in `src/core/`, drawing into a plain pixel array (`raster::Canvas`). No graphics library is used. Run `lumen_cp2` to save all twelve pages as images and the five animations as GIFs.
+The 2D algorithms are our own C++ in `src/core/`, drawing into a plain pixel array (`raster::Canvas`) with no graphics library. Run `lumen_pages` to save all twelve pages as images and the five animations as GIFs. The gallery itself is drawn with OpenGL, described at the end.
 
 ## Lines (`Raster.cpp`)
 
@@ -85,13 +85,37 @@ Each animation draws a frame for a time in seconds.
 
 **Image export** (`Image.cpp`). Writes a Canvas as a .bmp file, byte by byte.
 
-**JSON reader** (`Json.cpp`). Reads `assets/plan.json` so the project needs no libraries.
+**JSON reader** (`Json.cpp`). Reads `assets/plan.json`, so the plan needs no library.
 
 **Generated artwork** (`ArtPage.cpp`). Four works for Gallery Three, each made from a seed by a small random number generator: Bresenham lines on a grid, rotated squares, random polygons clipped by Sutherland-Hodgman and filled by scanline, and cubic Beziers with midpoint circles. Each also moves, looping every 8 seconds.
 
+## The gallery in OpenGL
+
+`lumen` is the walkable gallery. OpenGL, GLFW and glad open the window and draw the triangles; glm does the matrix maths; stb_image reads image files. Everything else below is ours.
+
+**The building** (`Builders.cpp`). Every wall in the plan is raised into a 3D block, with a lintel over each doorway and niche. The vault ceilings are quadratic Bezier arches, the frame moulding is a cubic Bezier profile swept round the canvas, and the atrium ceiling is a rectangle with the round oculus cut out, triangulated wedge by wedge.
+
+**Camera and collision** (`Camera.cpp`, `Collision.cpp`). The view is a look-at matrix from the visitor's eye and the projection is a perspective matrix, so each vertex goes through projection x view x model. The visitor is a circle and each wall a thick line; when they overlap, the visitor is pushed back out along the shortest way, which also lets them slide along walls.
+
+**Shading** (`shaders/lumen.vert`, `shaders/lumen.frag`). One shader with a mode per surface: Lambert (diffuse only), Blinn-Phong (per pixel, with the halfway vector), Gouraud (per vertex, used on purpose to show the difference), normal mapping (a bumped surface from a tangent space normal map), emissive, and triplanar (a texture projected along x, y and z and blended, for scans with no texture coordinates).
+
+**Lighting** (`Lighting.cpp`). The lamp is a spotlight that follows the view with a lag, with inverse square falloff fading to zero at its range and a soft cone edge. Each room's vault light is a hemisphere light that fades in when you walk in. The oculus lights the atrium the same way. Colours are lit in linear space, tone mapped (Reinhard) and converted to sRGB once at the end.
+
+**Shadows** (`Gfx.cpp`). Each frame the scene's depth is drawn from the lamp into a shadow map. A pixel is in shadow if something nearer to the lamp covers it; nine nearby lookups are averaged (PCF) for a soft edge.
+
+**Textures** (`Gfx.cpp`). Colour images are uploaded as sRGB and data such as normal maps as linear, with mipmaps and anisotropic filtering. Paintings get a normal map made from their own brightness with a Sobel filter, so brushstrokes and carved reliefs catch the lamp.
+
+**Our 2D code on screen** (`CanvasView.cpp`, `Minimap.cpp`). The minimap, the status strip and the F2 pages are drawn by our Checkpoint 1 and 2 code into a Canvas, then shown as a texture on a flat rectangle. The lamp's light on the minimap is an ellipse turned to your heading with a 3x3 matrix and clipped by Sutherland-Hodgman.
+
+**The tour** (`Tour.cpp`). A Catmull-Rom spline through the corridor waypoints, walked at an even speed by arc length.
+
+**Statues** (`Model.cpp`, `Sculpture.cpp`). Our own glTF 2.0 reader: the node tree with its transforms, the vertex data and the materials. Each statue is scaled to its real height, turned to face the visitor and stood on a plinth, in the atrium or a niche, from `assets/sculpture.json`.
+
+**The torch bearer** (`Skeleton.cpp`, `Character.cpp`, `Intro.cpp`). A skeleton is a tree of bones; a clip is keyframed turns and moves over time, sampled with linear interpolation and slerp for turns. Changing clips crossfades the two poses. Each vertex follows up to four bones, mixed by its weights, in the vertex shader (linear blend skinning). The clips come from an animation library for the same rig and are fitted to this character's bones by name. The intro itself is a small state machine: waiting as stone, walking out, offering the torch, walking back.
+
 ## Tests
 
-`tests/test_core.cpp` has 167 checks:
+`tests/test_core.cpp` has 309 checks. None needs a window. The Checkpoint 1 and 2 checks:
 
 - Bresenham: endpoints in all eight octants, no gaps on steep lines, matches DDA at 45 degrees
 - Thick lines: exact pixel count, thickness on both sides, no gaps on diagonals
@@ -109,3 +133,15 @@ Each animation draws a frame for a time in seconds.
 - Animation: interpolation, easing starts slow and never goes backwards, keyframes, looping, colour blending
 - GIF: LZW output decodes back exactly, few colours are kept exactly, the file has the right header and trailer
 - Every animation draws something and changes over time
+
+The gallery's checks:
+
+- Walls, floors, ceilings and vaults all face the right way, so none is culled or lit black
+- Collision: blocked by walls, slides along them, fits through doorways
+- The room light fades in and out on time, and the lamp follows the view with a lag
+- Walking the real building: through every doorway both ways, but not through the wall beside one
+- Lintels over every doorway and niche, vault ends, frame mouldings, and the oculus left open
+- glTF: node transforms, missing normals, mirrored nodes, clear messages for broken files, a real scan loads upright
+- Statues and reliefs: every one is credited, its files exist, it faces the visitor, and nobody walks through a plinth
+- Skeleton: a bent joint moves the skin the right way, slerp, looping, blending, retargeting, keeping a walk on the spot
+- The intro: the route misses every wall, the statue wakes, steps down, offers the torch, waits for E, and turns back to stone
