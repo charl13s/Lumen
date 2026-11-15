@@ -9,6 +9,7 @@
 //   lumen.exe --no-intro          starts with the lamp already in hand
 //       renders one settled frame from plan position (X, Y) and saves it.
 
+#include <algorithm>
 #include <cstdio>
 #include <exception>
 #include <memory>
@@ -454,9 +455,22 @@ int main(int argc, char** argv) {
         }
 
         // ---- state ---------------------------------------------------------
-        // The walls, plus the plinths so nobody walks through a statue.
+        // The walls, plus the plinths so nobody walks through a statue, plus
+        // whatever each room says is solid. Collision walls are thick, so each
+        // box's outline is pulled in by half a wall to keep its true size.
         std::vector<Segment> solid = plan.walls;
         for (const Segment& s : sculpture::plinthOutlines(plan, sculptures)) solid.push_back(s);
+        for (const RoomPtr& room : rooms)
+            for (const Footprint& f : room->footprints()) {
+                const float inset = plan.wallThickness * 0.5f;
+                const float hx = std::max(0.05f, f.half.x - inset), hy = std::max(0.05f, f.half.y - inset);
+                const Vec2 a{f.centre.x - hx, f.centre.y - hy}, b{f.centre.x + hx, f.centre.y - hy},
+                           c{f.centre.x + hx, f.centre.y + hy}, d{f.centre.x - hx, f.centre.y + hy};
+                solid.push_back({a, b});
+                solid.push_back({b, c});
+                solid.push_back({c, d});
+                solid.push_back({d, a});
+            }
         Collider        collider(solid, plan.wallThickness);
 
         // ---- the torch bearer ------------------------------------------------

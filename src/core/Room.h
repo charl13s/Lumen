@@ -8,6 +8,7 @@
 //   choose each surface's material and shading mode
 //   move things every frame (update() and transforms())
 //   react when the visitor walks in or out (onEnter, onExit)
+//   make things solid, so the visitor walks round them (footprints)
 //   keep its own constants at the top of its own file
 //
 // Rooms do not call OpenGL themselves; the program draws what build() returns.
@@ -62,6 +63,13 @@ struct RoomContext {
                              const std::string& finish = "scan") const;
 };
 
+// Something solid on the floor, as a box on the plan: its centre and how far
+// it reaches each way, in plan metres. The visitor walks round it.
+struct Footprint {
+    Vec2 centre;
+    Vec2 half;
+};
+
 class Room {
 public:
     virtual ~Room() = default;
@@ -79,6 +87,10 @@ public:
     // The visitor entered or left. The room light fade is already handled.
     virtual void onEnter() {}
     virtual void onExit()  {}
+
+    // What in the room is solid. Asked once, after build(). Nothing by default,
+    // so a room that leaves this alone can be walked through as before.
+    virtual std::vector<Footprint> footprints() const { return {}; }
 
     // Which techniques this room uses, printed with F1.
     virtual std::string techniqueNotes() const { return {}; }
