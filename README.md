@@ -12,7 +12,7 @@ The 3D view is drawn with OpenGL. The minimap, the status strip and the algorith
 
 | Member | Responsible for | Work so far |
 |---|---|---|
-| Shawn Kuria | Integration, repository, main program | Build setup with vcpkg, the gallery's main loop (`main.cpp`), the list of rooms, Gallery Three; earlier the GIF writer and the pages program |
+| Shawn Kuria | Integration, repository, main program | Build setup with vcpkg, the gallery's main loop (`main.cpp`), the list of rooms, Gallery Three (the Hall of Champions) and its pop art code (`PopArt.cpp`, `RoomThree.cpp`); earlier the GIF writer and the pages program |
 | Charles Murage | Camera, movement, collision | Camera, collision, the guided tour, the minimap, the torch bearer and the intro (`Camera.cpp`, `Collision.cpp`, `Tour.cpp`, `Minimap.cpp`, `Character.cpp`, `Intro.cpp`), Gallery Two; earlier the curves and animation helpers |
 | Timothy Kimani | Lighting, shading, artwork | The shaders, textures and shadow map, the lamp and room lights, the statues and reliefs (`Gfx.cpp`, `Lighting.cpp`, `Sculpture.cpp`, `shaders/`), Gallery One; earlier the generated artwork |
 | Erykah Diang'a | Geometry, floor plan | The building from the plan, the glTF model reader and the skeleton (`Builders.cpp`, `Model.cpp`, `Skeleton.cpp`, `Plan.cpp`), Gallery Four; earlier the 3D transformations |
@@ -38,14 +38,16 @@ The libraries open the window, talk to the graphics card and read image files. T
 | Clipping | Cohen-Sutherland, Sutherland-Hodgman | Minimap walls and route; room shapes and the lamp's light on the minimap |
 | Filling | Scanline polygon fill, boundary fill | Rooms on the minimap |
 | Circles and ellipses | Midpoint circle, midpoint ellipse | Visitor marker, doors, the oculus, the lamp's light |
-| Curves | Quadratic and cubic Bezier, de Casteljau, Catmull-Rom, arc length | Vault ceilings, picture frame moulding, the guided tour |
+| Curves | Quadratic and cubic Bezier, de Casteljau, Catmull-Rom, arc length | Vault ceilings, picture frame moulding, the guided tour, Gallery Three's sagging ropes |
 | 2D transformations | 3x3 matrices, about any point or line, composite, inverse | The lamp's light turned to your heading on the minimap |
 | 3D transformations | Model, view (look at) and perspective projection matrices | Every vertex in the gallery |
-| Animation | Interpolation, easing, keyframes, arc length motion; skeletal animation with slerp, crossfades and skinning | The tour, the room lights fading, the torch bearer |
+| Animation | Interpolation, easing, keyframes, arc length motion; skeletal animation with slerp, crossfades and skinning | The tour, the room lights fading, the torch bearer, Gallery Three's turning trophies |
+| Procedural meshes | Surfaces of revolution from Bezier profiles (with fluting), torus, sphere, leaves, tubes swept along a path | Gallery Three's trophies, rings, chandeliers and stanchion ropes |
+| Colour and raster operations | Rec. 601 luminance, histogram contrast stretch, posterising, halftone, Floyd-Steinberg and Bayer dithering; seamless tiling textures | Gallery Three's pop art, damask walls and terrazzo floor |
 | Shading | Lambert, Blinn-Phong, Gouraud, normal mapping, emissive, triplanar | Walls, paintings, reliefs, statues |
 | Lighting | Spotlight with falloff, hemisphere room light, tone mapping, sRGB | The carried lamp, the room lights, the oculus |
 | Shadows | Shadow mapping from the lamp, with soft edges (PCF) | Everything the lamp lights |
-| Textures | sRGB, mipmaps, anisotropic filtering, normal maps made with a Sobel filter | Paintings, reliefs, statues |
+| Textures | sRGB, mipmaps, anisotropic filtering, normal maps made with a Sobel filter, including from height maps our code draws | Paintings, reliefs, statues, Gallery Three's engraving |
 
 More detail is in `docs/ALGORITHMS.md`.
 
@@ -95,11 +97,13 @@ If `Could not find a package configuration file` appears, vcpkg is not at `C:\de
 - Five museum statues stand in the atrium and the corridor niches, and five carved reliefs hang on the atrium walls.
 - The minimap and the twelve algorithm pages are drawn by our own code and shown in the gallery.
 - Gallery Two is complete with framed paintings.
-- 309 unit tests pass.
+- Gallery Three, the Hall of Champions, is complete: a gold hall with six champions (all of them Shawn), pop art made by our own code, five gold rings, four chandeliers, gold athletes, and the six champions' trophies turning on gold pedestals inside gold stanchions.
+- 335 unit tests pass.
 
 ## Known limitations
 
-- Galleries One, Three, Four and Five are still empty.
+- Galleries One, Four and Five are still empty.
+- Only the walls, the atrium's plinths and what a room declares in `footprints()` are solid; Gallery Three declares its trophies and plinths.
 - Gallery Two's paintings are placeholders we generated, not real artwork.
 - The gallery opens in the bright Exhibition lighting. The intended darker look is one press of L away.
 - Only tested on Windows with Visual Studio.

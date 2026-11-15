@@ -79,6 +79,21 @@ Each animation draws a frame for a time in seconds.
 - **Motion by arc length**: the tour moves a set distance each frame, so the speed stays even round corners.
 - **GIF output**: each frame's colours are cut to 256 by median cut, then the pixels are compressed with LZW.
 
+## Pop art from a photograph (`PopArt.cpp`)
+
+Gallery Three's centrepiece is one portrait printed four ways, after Warhol's screen prints. The photograph is read with stb_image; every step after that is ours, on a Canvas.
+
+| Step | Function | How |
+|---|---|---|
+| Colour to grey | `luminance` | Rec. 601 luma, Y = 0.299 R + 0.587 G + 0.114 B. Green counts most because the eye is most sensitive to it |
+| Contrast | `stretch` | A 256 bin histogram. The level below which 2% of pixels fall becomes black, the level above which 2% fall becomes white, and everything between is spread out linearly |
+| Posterise | `posterise` | Cuts the grey range into equal bands, one flat colour each |
+| Halftone | `halftone` | One dot per 5 x 5 cell, drawn with the midpoint filled circle. The dot's area matches the cell's brightness: pi r^2 = b x cell^2, so r = cell x sqrt(b / pi). b goes through a printer's tone curve (b^1.6) first so the shadows do not merge |
+| Error diffusion | `floydSteinberg` | Each pixel is rounded to dark or light and the rounding error is passed on: 7/16 right, 3/16 down left, 5/16 down, 1/16 down right. The average brightness is kept, which the tests check |
+| Ordered dither | `bayer` | A 4 x 4 Bayer matrix of thresholds. Between two palette colours, a pixel rounds up when its fraction is above its threshold, so a 50% grey lights exactly 8 of every 16 pixels |
+
+`warholGrid` lays the four out in a 2 x 2 grid on a dark mount, with the title in our bitmap font, and the result goes onto the wall as a texture.
+
 ## Supporting code
 
 **Bitmap font** (`Font.cpp`). 5 by 7 pixel letters, drawn pixel by pixel, for every label.
@@ -87,7 +102,7 @@ Each animation draws a frame for a time in seconds.
 
 **JSON reader** (`Json.cpp`). Reads `assets/plan.json`, so the plan needs no library.
 
-**Generated artwork** (`ArtPage.cpp`). Four works for Gallery Three, each made from a seed by a small random number generator: Bresenham lines on a grid, rotated squares, random polygons clipped by Sutherland-Hodgman and filled by scanline, and cubic Beziers with midpoint circles. Each also moves, looping every 8 seconds.
+**Generated artwork** (`ArtPage.cpp`). Four works, shown on the F2 pages, each made from a seed by a small random number generator: Bresenham lines on a grid, rotated squares, random polygons clipped by Sutherland-Hodgman and filled by scanline, and cubic Beziers with midpoint circles. Each also moves, looping every 8 seconds.
 
 ## The gallery in OpenGL
 
@@ -113,9 +128,23 @@ Each animation draws a frame for a time in seconds.
 
 **The torch bearer** (`Skeleton.cpp`, `Character.cpp`, `Intro.cpp`). A skeleton is a tree of bones; a clip is keyframed turns and moves over time, sampled with linear interpolation and slerp for turns. Changing clips crossfades the two poses. Each vertex follows up to four bones, mixed by its weights, in the vertex shader (linear blend skinning). The clips come from an animation library for the same rig and are fitted to this character's bones by name. The intro itself is a small state machine: waiting as stone, walking out, offering the torch, walking back.
 
+**Gallery Three, the Hall of Champions** (`RoomThree.cpp`). Six edited sports photographs, the pop art, and the six trophies that go with the photographs, in a hall dressed in gold.
+
+- *The hall.* The plan's walls are lined: a band of gold damask wallpaper, a darker panel band, and boxes for the skirting, dado rail and crown moulding, split round the doorway. The plan's hang points sit 12 cm off the wall, so each is moved onto the lining and the frames sit against it. The vault is gilded by drawing the plan's vaults again, scaled 2 cm in about the room's middle so the gold sits just inside the plain plaster.
+- *Textures drawn by our own code.* The damask is one 256 px tile: a diamond trellis of thick Bresenham lines, midpoint ellipses and circles for the medallions and studs. Anything crossing the tile's edge is drawn again from the other side, so it repeats without a seam. The terrazzo floor is black with chips placed by a seeded linear congruential generator (the same floor every run), each chip also drawn in the eight neighbouring tiles. The title is "engraved": the text drawn once in a light colour one step down and right, then in a dark colour on top.
+- *Solid furniture.* Rooms can now say what is solid (`Room::footprints()`, a box on the plan each). `main.cpp` adds each box's outline to the collider, pulled in by half a wall thickness so the visitor stops their own radius from its true edge, as the atrium's plinths already did. Gallery Three makes the roped-off trophies and the two athletes' plinths solid. Rooms that do not use it are unchanged.
+- *Trophies turned on a lathe.* Each trophy's outline is a profile of (radius, height) points, made of cubic Bezier segments sampled with `bezierCubic`, then turned round the vertical axis: point (r, y) at angle a lands at (r cos a, y, r sin a). The normal there is the profile's tangent (dr, dy) turned a quarter, (dy, -dr), swung round with it. The lathe can also scale the radius by angle as it turns: r(1 + 0.05 cos 18a sin(pi v)) gives the cup's bowl 18 flutes that fade out at both ends of the band, and the same idea flutes the golden ball's stem. A shaped surface needs its normals worked out afresh, as the cross product of its two directions taken from the neighbouring points. The six are our own designs, one per sport: a laurel wreath, a two-handled cup, a golden ball, a sprint medal, two belts on a drum, and a basketball in a cradle.
+- *Engraving and enamel.* The fine detail is drawn by our own code as a height map (white is high), turned into a normal map with a Sobel filter (the slope across and down tips the normal), packed into an in-memory .bmp and uploaded as linear data, as a normal map needs. The same drawing gives the colour: black enamel collars with the champion's name in raised gold letters, the medal's "9.58" and its ring of laurel leaves (filled with our scanline fill), the belt plates' engraved CHAMPION, stitched and grained leather, and the basketball's pebbles. The lathe runs its texture coordinates against the angle so that, with the shader's B = N x T, the engraving's up is up and it reads left to right.
+- *The golden ball's panels.* Each point on the sphere belongs to the nearest of 32 centres: the 12 corners of an icosahedron (pentagons, in black enamel) and its 20 face centres (hexagons, in gold). Where the two nearest centres are almost equally near, the surface sinks into a groove; in the middle of a panel it swells slightly.
+- *Leaves.* A laurel leaf is our own mesh: pointed at both ends, its edge cut into teeth, and folded along the midrib so the rib catches the light. Pairs of them follow the wreath's two branches and the basketball cradle's scrolls, which are tubes that taper as they curl into a shrinking spiral. The garnet berries and the belts' gems are spheres with the sharpest highlight in the room.
+- *Our own meshes.* A torus (the five rings, the chandelier hoops, the wreath's branch, ball seams): a circle of radius R, with a tube of radius r swept round it, (R + r cos v)(cos u, sin u) and r sin v. A UV sphere. Octagonal belt plates (a polygon fan on each face, quads round the edge), rings of beads round rims and feet, and a buckle. A medal: two flat-mapped discs and a rim. Ribbons as two-sided strips. And a tube swept along any path, with a ring of vertices square to the path at each point, for the ropes, chandelier arms, cup handles and the basketball's cradle. Quads are wound to agree with their normals (using the cross product of the diagonals, which still works where a quad collapses to a triangle at a pole), so none is culled.
+- *Curves.* Each stanchion rope is a quadratic Bezier from `Curves.cpp`, with its control point twice the sag below the middle, so the lowest point is exactly the sag. Sag grows with the rope's length. The chandelier arms are quadratic Beziers too.
+- *Shading.* Gold is Blinn-Phong with a tinted albedo and a high specular, tightest on the trophies and crystal drops; the belts' leather has a soft sheen, the drum's velvet none. The rings lean 7 degrees alternately about the vertical, so each passes in front of one neighbour and behind the next. The prints are glossy, the labels and carpet matte (Lambert). Candle flames and picture lights are emissive, so they glow without lighting anything.
+- *Animation.* The trophies stand on turntables: each frame their model matrices are rebuilt as T(home) x Ry(angle + phase) x S, so each turns from its own starting angle, scaled up 1.4 times. Walking in sets a cheer value that decays exponentially, so they spin up and settle.
+
 ## Tests
 
-`tests/test_core.cpp` has 309 checks. None needs a window. The Checkpoint 1 and 2 checks:
+`tests/test_core.cpp` has 335 checks. None needs a window. The Checkpoint 1 and 2 checks:
 
 - Bresenham: endpoints in all eight octants, no gaps on steep lines, matches DDA at 45 degrees
 - Thick lines: exact pixel count, thickness on both sides, no gaps on diagonals
@@ -145,3 +174,4 @@ The gallery's checks:
 - Statues and reliefs: every one is credited, its files exist, it faces the visitor, and nobody walks through a plinth
 - Skeleton: a bent joint moves the skin the right way, slerp, looping, blending, retargeting, keeping a walk on the spot
 - The intro: the route misses every wall, the statue wakes, steps down, offers the torch, waits for E, and turns back to stone
+- Pop art: Rec. 601 weights, the histogram stretch, posterise bands, Floyd-Steinberg keeps the average brightness, Bayer lights exactly half at 50%, halftone dots grow with brightness

@@ -25,6 +25,7 @@
 #include "core/Model.h"
 #include "core/Plan.h"
 #include "core/Polygon.h"
+#include "core/PopArt.h"
 #include "core/Raster.h"
 #include "core/Sculpture.h"
 #include "core/Skeleton.h"
@@ -1846,6 +1847,84 @@ void testIntro() {
     }
 }
 
+// ---- pop art (Gallery Three) ------------------------------------------
+
+void testPopArt() {
+    std::printf("Pop art\n");
+    using popart::Grey;
+
+    {   // Rec. 601 luminance
+        const std::uint8_t px[] = {255, 255, 255,   0, 0, 0,   0, 255, 0,   255, 0, 0};
+        const Grey g = popart::luminance(px, 4, 1, 3);
+        checkNear(g.at(0, 0), 1.0f,   1e-5f, "white is 1");
+        checkNear(g.at(1, 0), 0.0f,   1e-5f, "black is 0");
+        checkNear(g.at(2, 0), 0.587f, 1e-3f, "pure green weighs 0.587");
+        checkNear(g.at(3, 0), 0.299f, 1e-3f, "pure red weighs 0.299");
+        checkNear(g.at(9, 0), g.at(3, 0), 1e-6f, "reads past the edge are clamped");
+    }
+    {   // histogram stretch: a dull ramp from 0.3 to 0.6 uses the whole range after
+        Grey g(64, 1);
+        for (int x = 0; x < 64; ++x) g.ref(x, 0) = 0.3f + 0.3f * static_cast<float>(x) / 63.0f;
+        popart::stretch(g, 0.0f);
+        checkNear(g.at(0, 0),  0.0f, 0.01f, "stretch: darkest becomes black");
+        checkNear(g.at(63, 0), 1.0f, 0.01f, "stretch: brightest becomes white");
+        bool rising = true;
+        for (int x = 1; x < 64; ++x) rising = rising && g.at(x, 0) >= g.at(x - 1, 0);
+        check(rising, "stretch keeps the order of the greys");
+        Grey flat(8, 8, 0.4f);
+        popart::stretch(flat);
+        checkNear(flat.at(3, 3), 0.4f, 1e-6f, "a flat image is left alone");
+    }
+
+    const Colour a{10, 10, 10, 255}, b{200, 0, 0, 255}, c{250, 250, 250, 255};
+
+    {   // posterise
+        Grey g(3, 1);
+        g.ref(0, 0) = 0.0f; g.ref(1, 0) = 0.5f; g.ref(2, 0) = 1.0f;
+        const Canvas p = popart::posterise(g, {a, b, c}, 2);
+        check(p.width() == 6 && p.height() == 2, "posterise: each pixel becomes a 2x2 block");
+        check(p.get(0, 0) == a && p.get(1, 1) == a, "posterise: black is the first colour");
+        check(p.get(2, 0) == b, "posterise: middle grey is the middle colour");
+        check(p.get(5, 1) == c, "posterise: white is the last colour");
+    }
+    {   // Floyd-Steinberg keeps the average brightness
+        for (float level : {0.0f, 0.25f, 0.5f, 1.0f}) {
+            const Grey g(40, 40, level);
+            const Canvas d = popart::floydSteinberg(g, a, c);
+            const float lit = static_cast<float>(countSet(d, c)) / 1600.0f;
+            checkNear(lit, level, 0.02f, "Floyd-Steinberg: share of light pixels matches the grey");
+        }
+    }
+    {   // Bayer: halfway between two colours lights exactly half of every 4x4 tile
+        const Grey g(32, 32, 0.5f);
+        const Canvas d = popart::bayer(g, {a, c});
+        check(countSet(d, c) == 512, "Bayer: a 50% grey lights exactly half the pixels");
+        int tile = 0;
+        for (int y = 0; y < 4; ++y)
+            for (int x = 0; x < 4; ++x) tile += d.get(x, y) == c ? 1 : 0;
+        check(tile == 8, "Bayer: and exactly 8 of the 16 in one tile");
+        check(countSet(popart::bayer(Grey(8, 8, 0.0f), {a, c}), a) == 64, "Bayer: black stays black");
+        check(countSet(popart::bayer(Grey(8, 8, 1.0f), {a, c}), c) == 64, "Bayer: white stays white");
+    }
+    {   // halftone: dots grow with brightness, and black has none
+        const Colour dot{255, 220, 40, 255}, paper{20, 20, 80, 255};
+        const int none   = countSet(popart::halftone(Grey(40, 40, 0.0f), 8, dot, paper), dot);
+        const int dim    = countSet(popart::halftone(Grey(40, 40, 0.3f), 8, dot, paper), dot);
+        const int bright = countSet(popart::halftone(Grey(40, 40, 0.9f), 8, dot, paper), dot);
+        check(none == 0, "halftone: black has no dots");
+        check(dim > 0 && bright > dim, "halftone: brighter cells have bigger dots");
+        check(bright < 1600, "halftone: the dots do not cover all the paper");
+    }
+    {   // the 2x2 print stays the size its parts add up to
+        Grey face(20, 24);
+        for (int y = 0; y < 24; ++y)
+            for (int x = 0; x < 20; ++x) face.ref(x, y) = static_cast<float>(x + y) / 42.0f;
+        const Canvas w = popart::warholGrid(face, "TEST", 2);
+        check(w.width() == 2 * 40 + 3 * 16, "warhol grid: two prints and three gaps wide");
+        check(w.height() == 2 * 48 + 3 * 16 + 60, "warhol grid: two prints, three gaps and the title tall");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -1878,6 +1957,7 @@ int main() {
     testSculpture();
     testSkeleton();
     testIntro();
+    testPopArt();
 
     std::printf("\n%d checks, %d failures\n\n", g_checks, g_failures);
     return g_failures == 0 ? 0 : 1;

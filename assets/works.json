@@ -55,6 +55,70 @@
     },
 
     {
+      "file": "works/hall-of-fame/ushawn-bolt.jpg",
+      "title": "Ushawn Bolt",
+      "artist": "Shawn Kuria (edit)",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Parody edit by Shawn Kuria: 100 m world record. Base photograph: SOURCE TO ADD.",
+      "licence": "SOURCE TO ADD"
+    },
+    {
+      "file": "works/hall-of-fame/leshawn-messi.jpg",
+      "title": "Leshawn Messi",
+      "artist": "Shawn Kuria (edit)",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Parody edit by Shawn Kuria: Ballon d'Or. Base photograph: SOURCE TO ADD.",
+      "licence": "SOURCE TO ADD"
+    },
+    {
+      "file": "works/hall-of-fame/leshawn-james.jpg",
+      "title": "Leshawn James",
+      "artist": "Shawn Kuria (edit)",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Parody edit by Shawn Kuria: NBA champion. Base photograph: SOURCE TO ADD.",
+      "licence": "SOURCE TO ADD"
+    },
+    {
+      "file": "works/hall-of-fame/connor-mckuria.jpg",
+      "title": "Connor McKuria",
+      "artist": "Shawn Kuria (edit)",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Parody edit by Shawn Kuria: UFC champion, two divisions. Base photograph: SOURCE TO ADD.",
+      "licence": "SOURCE TO ADD"
+    },
+    {
+      "file": "works/hall-of-fame/eliud-kipkuria.jpg",
+      "title": "Eliud Kipkuria",
+      "artist": "Shawn Kuria (edit)",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Parody edit by Shawn Kuria: Marathon under two hours. Base photograph: SOURCE TO ADD.",
+      "licence": "SOURCE TO ADD"
+    },
+    {
+      "file": "works/hall-of-fame/lewis-hamilshawn.jpg",
+      "title": "Lewis Hamilshawn",
+      "artist": "Shawn Kuria (edit)",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Parody edit by Shawn Kuria: Formula One world champion. Base photograph: SOURCE TO ADD.",
+      "licence": "SOURCE TO ADD"
+    },
+    {
+      "file": "works/hall-of-fame/face.jpg",
+      "title": "Shawn Kuria - Champion of Everything",
+      "artist": "Shawn Kuria",
+      "date": "2026",
+      "room": "R3",
+      "credit": "Cropped from the Leshawn Messi edit. Printed four ways at run time by src/core/PopArt.cpp.",
+      "licence": "our own work"
+    },
+
+    {
       "_example": "What a real entry looks like once you have sourced an image.",
       "file": "works/EXAMPLE-replace-me.jpg",
       "title": "<title exactly as the museum records it>",
