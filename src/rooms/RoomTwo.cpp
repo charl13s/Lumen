@@ -49,17 +49,17 @@ struct Work {
     label::Text text;
 };
 
-// In the order you meet them: down the left wall, then back up the right.
+// In the order you meet them: up the right wall, then back down the left.
 // Two to a wall, at its quarter points, so each has room to breathe.
 std::vector<Work> works() {
     return {
-        {"works/Room 2/monkey.jpg", true, 0.27f, false,
+        {"works/Room 2/monkey.jpg", false, 0.27f, false,
          {"The Thinking Monkey", {"Unknown artist", "Internet meme"}, "", ""}},
-        {"works/Room 2/banana.png", true, 0.73f, false,
+        {"works/Room 2/banana.png", false, 0.73f, false,
          {"Comedian", {"Maurizio Cattelan, 2019", "Banana and duct tape"}, "", ""}},
-        {"works/Room 2/MonaErykah.jpg", false, 0.73f, true,
+        {"works/Room 2/MonaErykah.jpg", true, 0.73f, true,
          {"Mona Erykah", {"Charles Murage, 2026", "Digital painting, after da Vinci"}, "", ""}},
-        {"works/Room 2/Jensen.jpg", false, 0.27f, false,
+        {"works/Room 2/Jensen.jpg", true, 0.27f, false,
          {"My Idol", {"Jensen Huang, co-founder of NVIDIA", "Photograph"}, "", ""}},
     };
 }
