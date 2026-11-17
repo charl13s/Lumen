@@ -32,3 +32,15 @@ The five Simba the Mighty pictures are digital works by Priscillah Njoroge, made
 - `statue/cat-statue`: "Concrete Cat Statue", Poly Haven, CC0. https://polyhaven.com/a/concrete_cat_statue
 - `statue/cat-stretching`: "Cat Stretching" (https://sketchfab.com/3d-models/cat-stretching-3524218d6a804e29901c4324ee47aa10) by kingofrichland (https://sketchfab.com/kingofrichland), licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/).
 - `statue/chonker`: "THE CHONKER (gwa gwa cat)" (https://sketchfab.com/3d-models/the-chonker-gwa-gwa-cat-8a22de5f69124818a2c268c20c5f91f7) by bean (alwayshasbean) (https://sketchfab.com/alwayshasbean), licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/).
+
+## Gallery Four (`rooms/R4/`)
+
+Five paintings by Rob Gonsalves (1959 to 2017), Canadian painter of magic realism, chosen by Erykah Diang'a. They are not public domain: they are shown here for study in a course project, credited on each wall label, and are © the estate of Rob Gonsalves.
+
+- `stardust.jpg`: Stardust.
+- `arboreal-office.jpg`: Arboreal Office.
+- `water-dancing.jpg`: Water Dancing, 2011.
+- `dancing-wind.jpg`: Dancing Wind.
+- `sun-sets-sail.jpg`: Sun Sets Sail, 2001.
+
+The sculpture is not a copy of any work. It is drawn by our own code (`RoomFour.cpp`) as a study after Liang Binbin's bronze Heart of the Horizon (2024). The nebula on the walls and vaults is also drawn by our own code.
