@@ -2,10 +2,12 @@
 
 // LUMEN fragment shader.
 //
-// Two lights:
+// Three lights:
 //   The lamp   a cone the visitor carries. Hard light, falls off fast, casts
 //              shadows from a shadow map rendered from the lamp.
 //   The vault  soft light from above, only in the room the visitor is in.
+//   The flame  the torch bearer's flame, a warm point light in every
+//              direction, until the torch is handed over. No shadows.
 //
 // Lighting is done in linear space. The last line converts back for display;
 // do not add a second gamma correction.
@@ -41,6 +43,11 @@ uniform float uVaultLevel;      // 0 to the reveal level
 uniform vec3  uViewPos;
 
 uniform float uAmbient;         // small, so nothing is pure black
+
+uniform vec3  uFlamePos;
+uniform vec3  uFlameColour;
+uniform float uFlameIntensity;  // 0 once the torch is handed over
+uniform float uFlameRange;
 
 uniform sampler2DShadow uShadowMap;
 uniform mat4  uLampViewProj;
@@ -136,6 +143,23 @@ void main() {
         lamp += uLampColour * uLampIntensity * atten * spec * uSpecular;
     }
 
+    // ---- the torch flame ---------------------------------------------------
+    // A point light: like the lamp, but with no cone, so it lights the bearer
+    // who holds it and whatever is close by.
+    vec3 flame = vec3(0.0);
+    if (uFlameIntensity > 0.0) {
+        vec3  toFlame = uFlamePos - vWorldPos;
+        float fd      = length(toFlame);
+        vec3  F       = toFlame / max(fd, 0.0001);
+        float fAtten  = attenuation(fd, uFlameRange) * uFlameIntensity;
+        flame = uFlameColour * fAtten * max(dot(N, F), 0.0);
+        if (uShading == SHADING_BLINN_PHONG || uShading == SHADING_NORMAL_MAPPED ||
+            uShading == SHADING_TRIPLANAR) {
+            vec3 H = normalize(F + V);
+            flame += uFlameColour * fAtten * pow(max(dot(N, H), 0.0), uShininess) * uSpecular;
+        }
+    }
+
     // ---- the vault wash ----------------------------------------------------
     // Soft light from above, modelled as a hemisphere rather than a point.
     float sky   = 0.5 + 0.5 * dot(N, vec3(0.0, 1.0, 0.0));
@@ -148,11 +172,11 @@ void main() {
     vec3 lit;
     if (uShading == SHADING_GOURAUD) {
         // Already worked out per vertex.
-        lit = albedo * (vGouraud * shadow + vault + uAmbient);
+        lit = albedo * (vGouraud * shadow + flame + vault + uAmbient);
     } else if (uShading == SHADING_LAMBERT) {
-        lit = albedo * (uLampColour * uLampIntensity * atten * diff + vault + uAmbient);
+        lit = albedo * (uLampColour * uLampIntensity * atten * diff + flame + vault + uAmbient);
     } else {
-        lit = albedo * (lamp + vault + uAmbient);
+        lit = albedo * (lamp + flame + vault + uAmbient);
     }
 
     // Emissive surfaces glow on their own.

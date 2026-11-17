@@ -55,7 +55,10 @@ inline constexpr int   kMaxJoints          = 100;   // must match MAX_JOINTS in 
 inline constexpr float kBearerPost[2]      = {1.5f, 1.2f};  // m west and south of the oculus centre
 inline constexpr float kBearerStandOff     = 1.4f;  // m from the visitor when offering the torch
 inline constexpr float kBearerTurnRate     = 200.0f;  // degrees per second
-inline constexpr float kBearerLight        = 0.30f; // soft light on the bearer, as if from the torch
+// The torch flame, a warm point light until the torch is handed over.
+inline constexpr float kFlameColour[3]     = {1.00f, 0.58f, 0.26f};
+inline constexpr float kFlameIntensity     = 1.4f;
+inline constexpr float kFlameRange         = 7.0f;  // m
 inline constexpr float kBearerPlinthHeight = 0.32f; // m, the step the statue stands on
 inline constexpr float kBearerPlinthSize   = 0.85f; // m, square
 inline constexpr float kBearerStepLength   = 0.7f;  // m of walking to step down off it, or up onto it
@@ -88,7 +91,7 @@ inline constexpr float kMinimapScale     = 4.6f;  // px per metre
 inline constexpr float kMinimapOpacity   = 0.82f;
 
 // ---- lighting modes --------------------------------------------------------
-// Cycled with L. Set kDefaultLightingMode to 1 for the final submission.
+// Cycled with L. The gallery starts in Gallery mode.
 struct LightingPreset {
     const char* name;
     float reveal;     // how bright a room gets, 0 to 1
@@ -104,7 +107,7 @@ inline constexpr LightingPreset kLightingPresets[] = {
 inline constexpr int kLightingPresetCount =
     static_cast<int>(sizeof(kLightingPresets) / sizeof(kLightingPresets[0]));
 
-inline constexpr int kDefaultLightingMode = 0;   // 1 for the final submission
+inline constexpr int kDefaultLightingMode = 1;   // Gallery
 
 // ---- the algorithm demo ----------------------------------------------------
 inline constexpr int kDemoW = 1280;   // fixed canvas size, scaled to the window

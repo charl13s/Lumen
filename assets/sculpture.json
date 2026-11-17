@@ -5,6 +5,7 @@
     "height is the statue alone, in metres. plinth is width, height and depth.",
     "turn spins a scan that does not face the visitor; forward moves it out of the niche, in metres.",
     "finish: scan, marble or bronze.",
+    "about is a line for the label: where and when it was made.",
     "wall is the outer face of the atrium a relief hangs on; at is plan x for N and S, plan y for E and W.",
     "Every credit here is shown on the credits screen (F3). See assets/CREDITS.md."
   ],
@@ -12,6 +13,7 @@
   "statues": [
     {
       "title": "Apollo Belvedere",
+      "about": "Roman marble, about 120 to 140 CE, after a Greek bronze by Leochares",
       "model": "models/apollo_belvedere/scene.gltf",
       "place": "atrium",
       "height": 2.24,
@@ -22,6 +24,7 @@
     },
     {
       "title": "Demeter of Knidos",
+      "about": "Greek marble, about 350 BCE, from Knidos. The original is in the British Museum",
       "model": "models/demeter_of_knidos/scene.gltf",
       "place": "niche 0",
       "height": 1.47,
@@ -32,6 +35,7 @@
     },
     {
       "title": "Maya and Merit",
+      "about": "Egyptian limestone, about 1320 BCE. Maya was treasurer to Tutankhamun",
       "model": "models/maya_and_merit/scene.gltf",
       "place": "niche 1",
       "height": 1.58,
@@ -43,6 +47,7 @@
     },
     {
       "title": "Zeus or Poseidon of Artemision",
+      "about": "Greek bronze, about 460 BCE, found in the sea off Cape Artemision",
       "model": "models/zeus_or_poseidon_from_the_artemision/scene.gltf",
       "place": "niche 2",
       "height": 1.9,
@@ -53,6 +58,7 @@
     },
     {
       "title": "Discobolus",
+      "about": "Roman marble, after a Greek bronze by Myron of about 450 BCE",
       "model": "models/discobolus_the_discus_thrower/scene.gltf",
       "place": "niche 3",
       "height": 1.55,
@@ -67,12 +73,14 @@
     {
       "title": "Relief panel, Assyrian, ca. 883 to 859 BCE",
       "image": "reliefs/assyrian-panel-a.jpg",
+      "about": "Gypsum alabaster, from the palace of Ashurnasirpal II at Nimrud",
       "wall": "N", "at": 18.0, "width": 1.9, "centre_height": 2.1,
       "credit": "The Metropolitan Museum of Art, Gift of John D. Rockefeller Jr., 1932, CC0"
     },
     {
       "title": "Relief panel, Assyrian, ca. 883 to 859 BCE",
       "image": "reliefs/assyrian-panel-b.jpg",
+      "about": "Gypsum alabaster, from the palace of Ashurnasirpal II at Nimrud",
       "wall": "N", "at": 26.0, "width": 1.9, "centre_height": 2.1,
       "credit": "The Metropolitan Museum of Art, Gift of John D. Rockefeller Jr., 1932, CC0"
     },
