@@ -119,6 +119,61 @@
     },
 
     {
+      "file": "rooms/R5/simba-the-mighty.jpg",
+      "title": "Simba the Mighty",
+      "artist": "Priscillah Njoroge",
+      "date": "2026",
+      "room": "R5",
+      "credit": "Digital collage by Priscillah Njoroge, made in Canva. The sitter approved the headdress after a long negotiation.",
+      "licence": "our own work",
+      "width_m": 1.54,
+      "height_m": 1.54
+    },
+    {
+      "file": "rooms/R5/simba-on-his-throne.jpg",
+      "title": "Simba the Mighty on his Throne",
+      "artist": "Priscillah Njoroge",
+      "date": "2026",
+      "room": "R5",
+      "credit": "Digital collage by Priscillah Njoroge, made in Canva. The throne is on loan from the nearest cushion.",
+      "licence": "our own work",
+      "width_m": 1.54,
+      "height_m": 1.54
+    },
+    {
+      "file": "rooms/R5/simba-after-battle.jpg",
+      "title": "Simba the Mighty after Battle",
+      "artist": "Priscillah Njoroge",
+      "date": "2026",
+      "room": "R5",
+      "credit": "Digital collage by Priscillah Njoroge, made in Canva. The battle was with a sock. The sock lost.",
+      "licence": "our own work",
+      "width_m": 1.54,
+      "height_m": 1.54
+    },
+    {
+      "file": "rooms/R5/simba-innovating.jpg",
+      "title": "Simba the Mighty Innovating",
+      "artist": "Priscillah Njoroge",
+      "date": "2026",
+      "room": "R5",
+      "credit": "Digital collage by Priscillah Njoroge, made in Canva. Innovation in progress; please do not disturb the cat.",
+      "licence": "our own work",
+      "width_m": 1.54,
+      "height_m": 1.54
+    },
+    {
+      "file": "rooms/R5/simba-the-ancestor.jpg",
+      "title": "Simba the Mighty's Ancestor",
+      "artist": "Priscillah Njoroge",
+      "date": "2026",
+      "room": "R5",
+      "credit": "Digital work by Priscillah Njoroge, made in Canva. The ancestor holds the centre wall and has not been reached for comment.",
+      "licence": "our own work",
+      "width_m": 1.87,
+      "height_m": 1.87
+    },
+    {
       "_example": "What a real entry looks like once you have sourced an image.",
       "file": "works/EXAMPLE-replace-me.jpg",
       "title": "<title exactly as the museum records it>",

@@ -24,3 +24,11 @@ Photographs from The Metropolitan Museum of Art Open Access, public domain (CC0)
 - `sarcophagus-garlands.jpg`: Marble sarcophagus with garlands, Roman, ca. 200 to 225 CE. Gift of Abdo Debbas, 1870. https://www.metmuseum.org/art/collection/search/239584
 - `stele-woman.jpg`: Marble grave stele of a woman, Greek, Boeotian, 425 to 400 BCE. Rogers Fund, 1908. https://www.metmuseum.org/art/collection/search/248114
 - `relief-hermes.jpg`: Marble relief with Hermes, Roman, 27 BCE to 68 CE. Harris Brisbane Dick Fund, 1991. https://www.metmuseum.org/art/collection/search/255983
+
+## Gallery Five (`rooms/R5/`)
+
+The five Simba the Mighty pictures are digital works by Priscillah Njoroge, made in Canva, 2026.
+
+- `statue/cat-statue`: "Concrete Cat Statue", Poly Haven, CC0. https://polyhaven.com/a/concrete_cat_statue
+- `statue/cat-stretching`: "Cat Stretching" (https://sketchfab.com/3d-models/cat-stretching-3524218d6a804e29901c4324ee47aa10) by kingofrichland (https://sketchfab.com/kingofrichland), licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `statue/chonker`: "THE CHONKER (gwa gwa cat)" (https://sketchfab.com/3d-models/the-chonker-gwa-gwa-cat-8a22de5f69124818a2c268c20c5f91f7) by bean (alwayshasbean) (https://sketchfab.com/alwayshasbean), licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/).

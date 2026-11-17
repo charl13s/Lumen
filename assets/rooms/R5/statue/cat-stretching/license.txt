@@ -1,0 +1,11 @@
+Model Information:
+* title:	Cat Stretching
+* source:	https://sketchfab.com/3d-models/cat-stretching-3524218d6a804e29901c4324ee47aa10
+* author:	kingofrichland (https://sketchfab.com/kingofrichland)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Cat Stretching" (https://sketchfab.com/3d-models/cat-stretching-3524218d6a804e29901c4324ee47aa10) by kingofrichland (https://sketchfab.com/kingofrichland) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
