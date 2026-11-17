@@ -746,6 +746,16 @@ int main(int argc, char** argv) {
                                                   cfg::kVaultColour[2]));
             shader->set("uAmbient", preset.ambient);
 
+            // The bearer's flame lights them and their surroundings, and fades
+            // as the torch becomes your lamp.
+            shader->set("uFlamePos", flame);
+            shader->set("uFlameColour", glm::vec3(cfg::kFlameColour[0], cfg::kFlameColour[1],
+                                                  cfg::kFlameColour[2]));
+            shader->set("uFlameIntensity", haveBearer ? cfg::kFlameIntensity * (1.0f - intro.handover()) *
+                                                            (1.0f + 0.12f * flicker)
+                                                      : 0.0f);
+            shader->set("uFlameRange", cfg::kFlameRange);
+
             // Shadow pass: draw the scene's depth from the lamp, into the shadow map.
             const bool castShadows = haveShadows && g_app.shadows;
             const glm::mat4 lampVP = lampProjection(lamp) * lampView(lamp);
@@ -801,14 +811,10 @@ int main(int argc, char** argv) {
             }
 
             if (haveBearer) {
-                // The torch lights its bearer; once it is handed over, only the
-                // oculus does, back in the atrium.
-                float level = cfg::kBearerLight;
-                if (!intro.bearerHasTorch())
-                    level = std::max(cfg::kBearerLight * (1.0f - intro.handover()),
-                                     plan.atriumRect.contains(intro.position())
-                                         ? preset.reveal * cfg::kOculusLight : 0.0f);
-                shader->set("uVaultLevel", level);
+                // The flame lights its bearer like everything else. From above,
+                // only the oculus does, in the atrium.
+                shader->set("uVaultLevel", plan.atriumRect.contains(intro.position())
+                                               ? preset.reveal * cfg::kOculusLight : 0.0f);
                 drawBearer(*shader, bearer, textures);
 
                 if (intro.bearerHasTorch()) {

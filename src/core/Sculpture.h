@@ -29,6 +29,7 @@ struct StatueSpec {
     std::string title;
     std::string model;        // path under assets/
     std::string place;        // "atrium", or "niche 0" to "niche 3"
+    std::string about;        // where and when it was made, for the label
     std::string credit;
     float       height  = 1.8f;    // m, the statue itself
     float       turnDeg = 0.0f;    // extra turn if the scan faces the wrong way
@@ -40,6 +41,7 @@ struct StatueSpec {
 struct ReliefSpec {
     std::string title;
     std::string image;        // path under assets/
+    std::string about;        // where and when it was made, for the label
     std::string credit;
     char        wall  = 'N';  // which outer face of the atrium: N, S, E or W
     float       at    = 0.0f; // plan x along a N or S face, plan y along E or W

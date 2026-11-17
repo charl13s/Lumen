@@ -27,6 +27,8 @@
 #include "core/Polygon.h"
 #include "core/PopArt.h"
 #include "core/Raster.h"
+#include "core/Font.h"
+#include "core/Label.h"
 #include "core/Sculpture.h"
 #include "core/Skeleton.h"
 #include "core/Transform.h"
@@ -1927,6 +1929,32 @@ void testPopArt() {
 
 } // namespace
 
+void testLabels() {
+    std::printf("Museum labels\n");
+
+    const std::string text = "Sold for 6.2 million dollars in 2024, then the buyer ate it.";
+    const std::vector<std::string> rows = label::wrap(text, 200, 2);
+    bool fits = true;
+    std::string joined;
+    for (const std::string& r : rows) {
+        if (font::textWidth(r, 2) > 200) fits = false;
+        joined += (joined.empty() ? "" : " ") + r;
+    }
+    check(rows.size() > 1, "a long caption wraps onto several lines");
+    check(fits, "every wrapped line fits the width");
+    check(joined == text, "wrapping keeps every word, in order");
+    check(label::wrap("", 200, 2).empty(), "no text, no lines");
+
+    label::Text t{"Comedian", {"Maurizio Cattelan, 2019", "Banana and duct tape"}, text, ""};
+    const raster::Canvas shortCard = label::draw(label::Text{"Comedian", {}, "", ""});
+    const raster::Canvas longCard  = label::draw(t);
+    check(longCard.height() > shortCard.height(), "a card grows to fit its words");
+    const glm::vec2 size = label::fit(longCard, 0.36f, 0.10f);
+    check(size.y <= 0.10f + 1e-5f && size.x <= 0.36f + 1e-5f, "a card fits the space it is given");
+    checkNear(size.x / size.y, static_cast<float>(longCard.width()) / longCard.height(), 1e-3f,
+              "and keeps its shape");
+}
+
 int main() {
     std::printf("\nLUMEN tests\n===========\n\n");
     testBresenham();
@@ -1955,6 +1983,7 @@ int main() {
     testBuildingDetail();
     testModels();
     testSculpture();
+    testLabels();
     testSkeleton();
     testIntro();
     testPopArt();
