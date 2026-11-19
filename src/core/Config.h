@@ -9,6 +9,13 @@ namespace lumen::cfg {
 inline constexpr float kWallHeight      = 4.2f;   // m, top of the vertical wall
 inline constexpr float kVaultApex       = 6.0f;   // m, top of the vault curve
 inline constexpr float kWallThickness   = 0.45f;  // m
+
+// The shared spaces (corridor, atrium, vestibule, niches) are clad in limestone
+// blocks, with a paler stone overhead. The galleries keep their own walls.
+inline constexpr float kStoneBlockW     = 1.2f;   // m, one block across
+inline constexpr float kStoneBlockH     = 0.7f;   // m, one course; six to a wall
+inline constexpr float kStoneTint[3]    = {1.55f, 1.42f, 1.18f};   // warm sand
+inline constexpr float kCeilingTint[3]  = {1.80f, 1.70f, 1.50f};   // paler, overhead
 inline constexpr float kDoorHeight      = 2.6f;   // m
 
 // ---- camera / movement -----------------------------------------------------

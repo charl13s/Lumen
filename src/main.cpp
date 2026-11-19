@@ -350,14 +350,30 @@ int main(int argc, char** argv) {
 
         // The building, extruded from the plan.
         {
+            // Inside the galleries the walls stay plain plaster, for each room
+            // to dress as it likes. The shared spaces are clad in limestone.
+            gfx::MeshData roomWalls, sharedWalls;
+            build::splitWallsByRoom(build::extrudeWalls(plan), plan, roomWalls, sharedWalls);
+            // The texture is two blocks by two.
+            build::projectUVs(sharedWalls, glm::vec2(cfg::kStoneBlockW, cfg::kStoneBlockH) * 2.0f);
+
             Drawable walls;
-            walls.mesh = gfx::Mesh::upload(build::extrudeWalls(plan));
+            walls.mesh = gfx::Mesh::upload(roomWalls);
             walls.material.albedo   = textures.get(assetDir + "materials/plaster.jpg");
             walls.material.tint     = glm::vec3(0.88f, 0.86f, 0.82f);
             walls.material.shading  = cfg::Shading::BlinnPhong;
             walls.material.specular = 0.04f;
-            std::printf("[lumen] walls: %zu triangles\n", walls.mesh->triangleCount());
+            std::printf("[lumen] walls: %zu triangles in rooms, %zu shared\n",
+                        roomWalls.triangleCount(), sharedWalls.triangleCount());
             scene.push_back(std::move(walls));
+
+            Drawable stone;
+            stone.mesh = gfx::Mesh::upload(sharedWalls);
+            stone.material.albedo   = textures.get(assetDir + "materials/stone.jpg");
+            stone.material.tint     = glm::vec3(cfg::kStoneTint[0], cfg::kStoneTint[1], cfg::kStoneTint[2]);
+            stone.material.shading  = cfg::Shading::Lambert;   // honed, no shine
+            stone.material.specular = 0.03f;
+            scene.push_back(std::move(stone));
 
             Drawable floors;
             floors.mesh = gfx::Mesh::upload(build::buildFloors(plan));
@@ -368,16 +384,23 @@ int main(int argc, char** argv) {
 
             // Ceilings over the corridor, and the atrium's, open to the sky.
             Drawable ceilings;
-            ceilings.mesh = gfx::Mesh::upload(build::buildCeilings(plan));
-            ceilings.material.albedo   = textures.get(assetDir + "materials/concrete.jpg");
-            ceilings.material.tint     = glm::vec3(0.70f);
+            // The same stone as the walls, paler, so the ceiling does not
+            // stand out against them.
+            const glm::vec3 ceilingTint(cfg::kCeilingTint[0], cfg::kCeilingTint[1], cfg::kCeilingTint[2]);
+            gfx::MeshData ceilingMesh = build::buildCeilings(plan);
+            build::projectUVs(ceilingMesh, glm::vec2(cfg::kStoneBlockW * 2.0f));
+            ceilings.mesh = gfx::Mesh::upload(ceilingMesh);
+            ceilings.material.albedo   = textures.get(assetDir + "materials/stone.jpg");
+            ceilings.material.tint     = ceilingTint;
             ceilings.material.shading  = cfg::Shading::Lambert;
             scene.push_back(std::move(ceilings));
 
             Drawable oculus;
-            oculus.mesh = gfx::Mesh::upload(build::buildOculusCeiling(plan, cfg::kOculusRim));
-            oculus.material.albedo  = textures.get(assetDir + "materials/plaster.jpg");
-            oculus.material.tint    = glm::vec3(0.80f, 0.77f, 0.72f);
+            gfx::MeshData oculusMesh = build::buildOculusCeiling(plan, cfg::kOculusRim);
+            build::projectUVs(oculusMesh, glm::vec2(cfg::kStoneBlockW * 2.0f));
+            oculus.mesh = gfx::Mesh::upload(oculusMesh);
+            oculus.material.albedo  = textures.get(assetDir + "materials/stone.jpg");
+            oculus.material.tint    = ceilingTint;
             oculus.material.shading = cfg::Shading::Lambert;
             oculus.roomId = "ATRIUM";
             scene.push_back(std::move(oculus));

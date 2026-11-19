@@ -113,6 +113,36 @@ gfx::MeshData extrudeWalls(const Plan& plan) {
     return m;
 }
 
+void splitWallsByRoom(const gfx::MeshData& walls, const Plan& plan,
+                      gfx::MeshData& inRooms, gfx::MeshData& shared) {
+    for (std::size_t i = 0; i + 2 < walls.indices.size(); i += 3) {
+        const gfx::Vertex& a = walls.vertices[walls.indices[i + 0]];
+        const gfx::Vertex& b = walls.vertices[walls.indices[i + 1]];
+        const gfx::Vertex& c = walls.vertices[walls.indices[i + 2]];
+
+        // Step a little off the face, along its normal, and see where we are.
+        const glm::vec3 n = glm::normalize(glm::cross(b.position - a.position, c.position - a.position));
+        const glm::vec3 p = (a.position + b.position + c.position) / 3.0f + n * 0.05f;
+        const Vec2 at{p.x, -p.z};   // back to plan space
+
+        bool room = false;
+        for (const RoomPlan& r : plan.rooms) room = room || r.rect.contains(at);
+        (room ? inRooms : shared).addTriangle(a, b, c);
+    }
+}
+
+void projectUVs(gfx::MeshData& mesh, glm::vec2 tile) {
+    for (gfx::Vertex& v : mesh.vertices) {
+        const glm::vec3& p = v.position;
+        glm::vec2 uv;
+        if (std::fabs(v.normal.y) > 0.5f)
+            uv = {p.x, p.z};   // floor or ceiling
+        else
+            uv = {std::fabs(v.normal.x) > std::fabs(v.normal.z) ? p.z : p.x, p.y};   // a wall
+        v.uv = uv / tile;
+    }
+}
+
 gfx::MeshData buildFloors(const Plan& plan) {
     gfx::MeshData m;
     addFloorQuad(m, plan.vestibuleRect, 0.0f, 1.0f);

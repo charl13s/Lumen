@@ -1324,6 +1324,37 @@ void testBuildingDetail() {
 
     const Plan plan = Plan::load(std::string(LUMEN_ASSET_DIR) + "plan.json");
 
+    {   // the shared walls are clad in stone, the galleries' walls are left alone
+        const gfx::MeshData all = build::extrudeWalls(plan);
+        gfx::MeshData rooms, shared;
+        build::splitWallsByRoom(all, plan, rooms, shared);
+        check(rooms.triangleCount() + shared.triangleCount() == all.triangleCount(),
+              "splitting the walls keeps every triangle, once");
+        check(rooms.triangleCount() > 0 && shared.triangleCount() > 0,
+              "some walls face into the galleries and some into the shared spaces");
+
+        int leaks = 0;
+        for (std::size_t i = 0; i + 2 < shared.indices.size(); i += 3) {
+            const glm::vec3 a = shared.vertices[shared.indices[i]].position;
+            const glm::vec3 b = shared.vertices[shared.indices[i + 1]].position;
+            const glm::vec3 c = shared.vertices[shared.indices[i + 2]].position;
+            const glm::vec3 n = glm::normalize(glm::cross(b - a, c - a));
+            const glm::vec3 p = (a + b + c) / 3.0f + n * 0.05f;
+            for (const RoomPlan& r : plan.rooms)
+                if (r.rect.contains(Vec2{p.x, -p.z}, 0.3f)) ++leaks;
+        }
+        check(leaks == 0, "no stone wall faces into anyone's gallery");
+
+        // Projected coordinates run along a wall and up it, at the tile size.
+        gfx::MeshData q;
+        q.addQuad({0, 0, 0}, {2.4f, 0, 0}, {2.4f, 1.4f, 0}, {0, 1.4f, 0});
+        build::projectUVs(q, {2.4f, 1.4f});
+        bool spans = true;
+        for (const gfx::Vertex& v : q.vertices)
+            spans = spans && std::fabs(v.uv.x - v.position.x / 2.4f) < 1e-5f &&
+                    std::fabs(v.uv.y - v.position.y / 1.4f) < 1e-5f;
+        check(spans, "projected texture coordinates follow the wall across and up");
+    }
     {   // a lintel over every doorway, with an underside facing down at door height
         Plan doorsOnly = plan;
         doorsOnly.walls.clear();
