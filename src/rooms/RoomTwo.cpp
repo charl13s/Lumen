@@ -56,13 +56,13 @@ struct Work {
 std::vector<Work> works() {
     return {
         {"works/Room 2/monkey.jpg", false, 0.27f, false,
-         {"The Thinking Monkey", {"Unknown artist", "Internet meme"}, "", ""}},
+         {"The Thinking Monkey", {}, "", ""}},
         {"works/Room 2/banana.png", false, 0.73f, false,
-         {"Comedian", {"Maurizio Cattelan, 2019", "Banana and duct tape"}, "", ""}},
+         {"Banana and Duct Tape", {"Maurizio Cattelan, 2019"}, "", ""}},
         {"works/Room 2/MonaErykah.jpg", true, 0.73f, true,
-         {"Mona Erykah", {"Charles Murage, 2026", "Digital painting, after da Vinci"}, "", ""}},
+         {"Mona Erykah", {"Charles Murage, 2026"}, "", ""}},
         {"works/Room 2/Jensen.jpg", true, 0.27f, false,
-         {"My Idol", {"Jensen Huang, co-founder of NVIDIA", "Photograph"}, "", ""}},
+         {"My Idol", {"Jensen Huang, co-founder of NVIDIA"}, "", ""}},
     };
 }
 
