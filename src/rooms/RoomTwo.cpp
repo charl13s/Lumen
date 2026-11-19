@@ -1,8 +1,8 @@
 // RoomTwo.cpp - Gallery Two.  Owner: Charles Murage (165948)
 //
 // Things I like, hung like a proper gallery: my favourite meme, my favourite
-// painting, my own painting and my idol. Two works on each side wall, a
-// painted lining behind them, and a label under everything. The front wall
+// painting, my own painting and my idol. Two works on each side wall, the
+// walls and vaults painted green, and a label under everything. The front wall
 // is still to come.
 //
 // Technique: Blinn-Phong per pixel. The painting is normal mapped from its
@@ -10,6 +10,8 @@
 
 #include "core/Room.h"
 #include "core/Label.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -141,7 +143,25 @@ public:
             pieces.push_back(std::move(skirt));
         }
 
-        // ---- 2. the works ------------------------------------------------
+        // ---- 2. the ceiling ----------------------------------------------
+        // The same green on the vaults. A copy of the building's vaults, pulled
+        // in to the lining and dropped by the same gap, so it sits just inside
+        // them with no flicker where the two meet.
+        {
+            const float apex = ctx.plan ? ctx.plan->vaultApex : 6.0f;
+            Piece vault;
+            vault.mesh.append(build::buildRoomVaults(*ctx.me, wallH, apex,
+                                                     2.0f * (halfWall + kLiningOut)),
+                              glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -kLiningOut, 0.0f)));
+            vault.material.albedo   = ctx.texture("materials/plaster.jpg");
+            vault.material.tint     = kWallColour;
+            vault.material.shading  = cfg::Shading::Lambert;
+            vault.material.specular = 0.02f;
+            vault.note = "painted vaults";
+            pieces.push_back(std::move(vault));
+        }
+
+        // ---- 3. the works ------------------------------------------------
         for (const Work& wk : works()) {
             // As big as fits, keeping the image's shape.
             const gfx::Texture* img = ctx.texture(wk.image);
@@ -197,7 +217,7 @@ public:
             pieces.push_back(std::move(plate));
         }
 
-        // ---- 3. a sculpture ----------------------------------------------
+        // ---- 4. a sculpture ----------------------------------------------
         // Something 3D in the middle of the room.
         const Vec2 c = r.centre();
         const glm::vec3 floorCentre = w3(c.x, 0.0f, c.y);

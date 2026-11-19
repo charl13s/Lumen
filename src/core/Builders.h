@@ -18,6 +18,17 @@ namespace lumen::build {
 // Raises each 2D wall in the plan into a 3D wall, with a lintel over each doorway.
 gfx::MeshData extrudeWalls(const Plan& plan);
 
+// Sorts wall triangles by the space they face: into one of the galleries, or
+// into the shared spaces (corridor, atrium, vestibule, niches, outside).
+// Lets the shared walls be dressed without changing anyone's room.
+void splitWallsByRoom(const gfx::MeshData& walls, const Plan& plan,
+                      gfx::MeshData& inRooms, gfx::MeshData& shared);
+
+// Gives every vertex texture coordinates from its world position, so a texture
+// keeps its size and shape on any surface. Walls run across and up; floors and
+// ceilings use the plan. `tile` is the metres covered by one repeat.
+void projectUVs(gfx::MeshData& mesh, glm::vec2 tile);
+
 // Floor slabs for the rooms, corridor, atrium and vestibule.
 gfx::MeshData buildFloors(const Plan& plan);
 
